@@ -1,4 +1,4 @@
-# Fintra CRM Mobile
+# ONIA CRM Mobile
 
 Eigenständiger Android-App-Prototyp auf Basis von Expo/React Native. Die App enthält ein mobiles Dashboard, die vollständige Fachnavigation, eine filterbare Kundenliste, eine Kundenakte mit Aufgaben, Dokumenten und Verlauf sowie einen Fotoimport für Kundendaten. Alle enthaltenen Personen und Daten sind fiktiv.
 
