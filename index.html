@@ -735,6 +735,7 @@ function tabUeber(c) {
   const d = ev ? daysTo(ev.date) : null;
   const tiles = `<div class="tiles">
     ${tile('kk', 'Krankenkasse', esc((kk && kk.versicherer) || 'Nicht erfasst'), kk ? esc(`${chf(kkMonthly(c))} pro Monat${kk.ablauf ? ' · bis ' + fmtDate(kk.ablauf) : ''}`) : 'Tippen zum Erfassen')}
+    <a class="tile" href="vorsorge.html?kunde=${encodeURIComponent(c.id)}" style="text-decoration:none;grid-column:1/-1;min-height:0"><span class="tl">Vorsorge-Analyse</span><span class="tv">Lücken prüfen</span><span class="ts">Pensionierung, Invalidität, Tod</span></a>
     ${tile('vorsorge', 'Private Vorsorge', `3a: ${s3a.length ? 'Ja' : 'Nein'} · 3b: ${s3b.length ? 'Ja' : 'Nein'}`, esc(einz ? chf(einz) + ' Einzahlung pro Jahr' : 'Keine Einzahlung erfasst'))}
     ${tile('vers', 'Versicherungen', String(c.vers.length), esc(chf(sumBy(c.vers, 'praemie')) + ' pro Jahr'))}
     ${tile('vermoegen', 'Gesamtvermögen', esc(chf(m.total)), 'inkl. Vorsorgegelder')}
@@ -784,6 +785,7 @@ function tabVorsorge(c) {
   const a = c.vorsorge.filter(v => v.saeule === '3a'), b = c.vorsorge.filter(v => v.saeule === '3b');
   const sm = (arr, l) => `<div class="tile"><span class="tl">${l}</span><span class="tv">${arr.length ? 'Ja' : 'Nein'}</span><span class="ts">${arr.length ? esc(`${arr.length} ${arr.length === 1 ? 'Vertrag' : 'Verträge'} · ${chf(sumBy(arr, 'saldo'))}`) : 'Nichts erfasst'}</span></div>`;
   let h = `<div class="tiles">${sm(a, 'Säule 3a')}${sm(b, 'Säule 3b')}</div>`;
+  h += `<a class="btn block" style="margin-top:12px" href="vorsorge.html?kunde=${encodeURIComponent(c.id)}">Vorsorge-Analyse öffnen</a>`;
   // 1. AHV
   const ahv = c.ahv;
   h += `<section class="sec"><div class="sech"><h2>1. AHV</h2></div>`;
@@ -1845,6 +1847,14 @@ document.addEventListener('input', e => {
 async function init() {
   try { history.replaceState({ view: 'list' }, ''); } catch (e) {}
   try { S.customers = JSON.parse(ls.get(LS) || '[]').map(normC); } catch (e) { S.customers = []; }
+  try {
+    const qp = new URLSearchParams(location.search), kid = qp.get('kunde');
+    if (kid && S.customers.some(c => c.id === kid)) {
+      history.replaceState({ view: 'list' }, '', location.pathname);
+      S.view = 'detail'; S.selId = kid; S.tab = qp.get('tab') || 'uebersicht';
+      history.pushState({ view: 'detail', id: kid }, '');
+    }
+  } catch (e) {}
   S.ready = true; render();
   docLoadMeta().then(m => { S.docs = m; render(); }).catch(() => {});
   window.addEventListener('resize', () => { const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px'); });
