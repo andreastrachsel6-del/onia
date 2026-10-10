@@ -173,6 +173,20 @@ button.tile:active{background:var(--tint)}
 .dtabs::-webkit-scrollbar{display:none}
 .dtabs button{flex:none;min-height:36px;padding:0 14px;border-radius:9px;border:1px solid rgba(9,21,43,.06);background:var(--surface);color:var(--ink);font-weight:400;font-size:16px;box-shadow:0 1px 4px rgba(35,29,18,.12);cursor:pointer;white-space:nowrap}
 .dtabs button.on{background:var(--blue);border-color:transparent;color:var(--on-blue);box-shadow:0 1px 3px rgba(35,29,18,.18)}
+.dtabs{gap:8px}
+.dtabs button{display:inline-flex;align-items:center;gap:8px;min-height:46px;min-width:46px;padding:0 11px;justify-content:center;color:var(--muted)}
+.dtabs button svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.dtabs button .tlbl{display:none;font-size:15px;font-weight:500}
+.dtabs button.on{color:var(--on-blue);padding:0 14px 0 12px}
+.dtabs button.on .tlbl{display:inline}
+.cdet{margin-top:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:0 14px}
+.cdet>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;min-height:52px;font-weight:600}
+.cdet>summary::-webkit-details-marker{display:none}
+.cdet>summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--blue);border-bottom:2px solid var(--blue);transform:rotate(45deg);flex:none}
+.cdet[open]>summary::after{transform:rotate(-135deg)}
+.cdet .cdsum{font-weight:400;font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cdet[open] .cdsum{display:none}
+.cdet .sec:first-of-type{border-top:0;margin-top:0}
 .irow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 2px;cursor:pointer;color:var(--ink)}
 .irow:active{background:var(--tint)}
 .irow .it{display:block;font-weight:600}
@@ -312,7 +326,7 @@ const S = {
   view: 'list', selId: null, q: '', taskTab: 'open', showAllLog: false,
   draft: null, formId: null, formSource: 'manuell', unsicher: [], matchId: null, extracted: null, saving: false,
   photos: [], busy: false, err: '', ctl: null,
-  installEv: null, tab: 'uebersicht', item: null, letter: null, docs: [], thumbs: {}, sel: {},
+  installEv: null, tab: 'aufgaben', detOpen: false, item: null, letter: null, docs: [], thumbs: {}, sel: {},
   lf: 'alle', ev: { tab: 'uebersicht', ins: '' }, seg: null, mail: { tpl: '', subject: '', body: '', seg: 'kunden', sent: {} }, imp: null
 };
 const byId = id => S.customers.find(c => c.id === id);
@@ -688,7 +702,20 @@ async function importZip(file) {
 }
 
 /* ---------- Kundenakte: Reiter ---------- */
-const DT = [['uebersicht', 'Übersicht'], ['kk', 'Krankenkasse'], ['vorsorge', 'Altersvorsorge'], ['vers', 'Versicherungen'], ['vermoegen', 'Vermögen'], ['steuer', 'Steuern'], ['dokumente', 'Dokumente'], ['verlauf', 'Verlauf']];
+const DT = [['aufgaben', 'Aufgaben'], ['steuer', 'Steuern'], ['vers', 'Versicherungen'], ['kk', 'Gesundheitsvorsorge'], ['vorsorge', 'Altersvorsorge'], ['vermoegen', 'Vermögen'], ['analyse', 'Analyse'], ['uebersicht', 'Übersicht'], ['dokumente', 'Dokumente'], ['verlauf', 'Verlauf']];
+const TI = {
+  aufgaben: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.2 1.2L6.8 5M3.5 12l1.2 1.2L6.8 11M3.5 18l1.2 1.2L6.8 17"/>',
+  steuer: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9.5 16.5l6-6"/><circle cx="10" cy="11" r="1.1"/><circle cx="15" cy="16" r="1.1"/>',
+  vers: '<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+  kk: '<path d="M12 20s-7-4.4-8.6-9.1A4.6 4.6 0 0 1 12 6.5a4.6 4.6 0 0 1 8.6 4.4C19 15.6 12 20 12 20z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/>',
+  vorsorge: '<circle cx="10" cy="4.5" r="2"/><path d="M10 7.5l-2 6 3 2.5 1 5M8 13.5l-1.5 7M10 8l3.5 3 2.5-.5"/><path d="M16.5 10.5v10"/>',
+  vermoegen: '<ellipse cx="12" cy="6" rx="7" ry="2.5"/><path d="M5 6v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V6M5 10v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-4M5 14v4c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-4"/>',
+  analyse: '<path d="M3.5 17a8.5 8.5 0 1 1 17 0"/><path d="M12 17l4-5"/><circle cx="12" cy="17" r="1.3"/><path d="M6.5 11.5l1 .6M12 8.5v1.2M17.5 11.5l-1 .6"/>',
+  uebersicht: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+  dokumente: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  verlauf: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'
+};
+const tabIcon = k => `<svg viewBox="0 0 24 24" aria-hidden="true">${TI[k] || ''}</svg>`;
 const dataAttr = (cat, c, id) => `data-cat="${cat}" data-cid="${esc(c.id)}" data-id="${esc(id || '')}"`;
 function irow(cat, c, it, title, sub, right, extra) {
   return `<button class="irow" data-act="itemedit" ${dataAttr(cat, c, it.id)}><span><span class="it">${esc(title)}</span><span class="is">${esc(sub)}</span>${extra || ''}${docBadge(ownerOf(cat, it.id))}</span><span class="ir">${esc(right || '')}</span></button>`;
@@ -710,15 +737,15 @@ function viewDetail() {
   const sub = [a != null ? a + ' Jahre' : '', c.beruf].filter(Boolean).join(', ');
   const tel = (c.telefon || '').replace(/[^\d+]/g, '');
   const nd = S.docs.filter(d => d.cid === c.id).length;
-  const tabs = `<div id="dtabanchor"></div><div class="dtabs" role="tablist">${DT.map(([k, l]) => `<button role="tab" class="${S.tab === k ? 'on' : ''}" data-act="dtab" data-v="${k}">${l}${k === 'dokumente' && nd ? ' (' + nd + ')' : ''}</button>`).join('')}</div>`;
-  const body = ({ uebersicht: tabUeber, kk: tabKK, vorsorge: tabVorsorge, vers: tabVers, vermoegen: tabVermoegen, steuer: tabSteuer, dokumente: tabDokumente, verlauf: tabVerlauf }[S.tab] || tabUeber)(c);
+  const tabs = `<div id="dtabanchor"></div><div class="dtabs" role="tablist">${DT.map(([k, l]) => `<button role="tab" aria-selected="${S.tab === k}" aria-label="${l}" title="${l}" class="${S.tab === k ? 'on' : ''}" data-act="dtab" data-v="${k}">${tabIcon(k)}<span class="tlbl">${l}${k === 'dokumente' && nd ? ' (' + nd + ')' : ''}</span></button>`).join('')}</div>`;
+  const body = ({ aufgaben: tabAufgaben, analyse: tabAnalyse, uebersicht: tabUeber, kk: tabKK, vorsorge: tabVorsorge, vers: tabVers, vermoegen: tabVermoegen, steuer: tabSteuer, dokumente: tabDokumente, verlauf: tabVerlauf }[S.tab] || tabAufgaben)(c);
   return `<button class="back" data-act="tab" data-view="list">${I.back} Kunden</button>
   <div class="hero">${avatar(c, 64)}<div><h1>${esc(fullName(c))}</h1>${sub ? `<p>${esc(sub)}</p>` : ''}</div></div>
   <div class="actions">
     ${tel ? `<a class="btn ghost" href="tel:${esc(tel)}" target="_blank" rel="noopener">${I.phone} Anrufen</a>` : `<span class="btn ghost" style="opacity:.4">${I.phone} Anrufen</span>`}
     ${c.email ? `<a class="btn ghost" href="mailto:${esc(c.email)}" target="_blank" rel="noopener">${I.mail} E-Mail</a>` : `<span class="btn ghost" style="opacity:.4">${I.mail} E-Mail</span>`}
     <button class="btn" data-act="edit" data-id="${esc(c.id)}">${I.edit} Ändern</button>
-  </div>${isLead(c) ? leadBar(c) : ''}${dataSections(c)}${tabs}<div>${body}</div>`;
+  </div>${isLead(c) ? leadBar(c) : ''}<details class="cdet" id="cdet" ${S.detOpen ? 'open' : ''}><summary><span>Kundendaten</span><span class="cdsum">${esc([c.geburtsdatum ? fmtDate(c.geburtsdatum) : '', [c.plz, c.ort].filter(Boolean).join(' '), c.telefon].filter(Boolean).join(' · ') || 'Persönlich, Kontakt, Profil')}</span></summary>${dataSections(c)}</details>${tabs}<div>${body}</div>`;
 }
 function scrollToTabs() {
   const an = document.getElementById('dtabanchor'); if (!an) return;
@@ -734,21 +761,38 @@ function tabUeber(c) {
   const tile = (tab, l, v, s) => `<button class="tile" data-act="dtab" data-v="${tab}"><span class="tl">${l}</span><span class="tv">${v}</span><span class="ts">${s}</span></button>`;
   const d = ev ? daysTo(ev.date) : null;
   const tiles = `<div class="tiles">
-    ${tile('kk', 'Krankenkasse', esc((kk && kk.versicherer) || 'Nicht erfasst'), kk ? esc(`${chf(kkMonthly(c))} pro Monat${kk.ablauf ? ' · bis ' + fmtDate(kk.ablauf) : ''}`) : 'Tippen zum Erfassen')}
-    <a class="tile" href="vorsorge.html?kunde=${encodeURIComponent(c.id)}" style="text-decoration:none;grid-column:1/-1;min-height:0"><span class="tl">Vorsorge-Analyse</span><span class="tv">Lücken prüfen</span><span class="ts">Pensionierung, Invalidität, Tod</span></a>
+    ${tile('kk', 'Gesundheitsvorsorge', esc((kk && kk.versicherer) || 'Nicht erfasst'), kk ? esc(`${chf(kkMonthly(c))} pro Monat${kk.ablauf ? ' · bis ' + fmtDate(kk.ablauf) : ''}`) : 'Tippen zum Erfassen')}
     ${tile('vorsorge', 'Private Vorsorge', `3a: ${s3a.length ? 'Ja' : 'Nein'} · 3b: ${s3b.length ? 'Ja' : 'Nein'}`, esc(einz ? chf(einz) + ' Einzahlung pro Jahr' : 'Keine Einzahlung erfasst'))}
     ${tile('vers', 'Versicherungen', String(c.vers.length), esc(chf(sumBy(c.vers, 'praemie')) + ' pro Jahr'))}
     ${tile('vermoegen', 'Gesamtvermögen', esc(chf(m.total)), 'inkl. Vorsorgegelder')}
     ${tile('steuer', 'Steuern', st ? esc('Steuerjahr ' + st.jahr) : 'Nicht erfasst', st ? esc(st.status || '') : 'Tippen zum Erfassen')}
     <div class="tile"><span class="tl">Nächste Frist</span><span class="tv">${ev ? esc(fmtDate(ev.date)) : 'Keine'}</span><span class="ts">${ev ? esc(ev.label) + (d < 0 ? ' (überfällig)' : d <= 30 ? ` (in ${d} Tagen)` : '') : 'Keine Fristen erfasst'}</span></div>
   </div>`;
-  const tasks = [...c.aufgaben].sort((x, y) => (x.erledigt - y.erledigt) || (x.faellig || '9').localeCompare(y.faellig || '9'));
   return `${tiles}
-  <section class="sec"><h2>Aufgaben</h2>
+  <section class="sec"><button class="btn danger" data-act="del" data-id="${esc(c.id)}">Kunde löschen</button></section>`;
+}
+
+function tabAufgaben(c) {
+  const tasks = [...c.aufgaben].sort((x, y) => (x.erledigt - y.erledigt) || (x.faellig || '9').localeCompare(y.faellig || '9'));
+  return `  <section class="sec" style="border-top:0;margin-top:6px"><h2>Aufgaben</h2>
     <div class="addtask"><input id="tt" data-keep type="text" placeholder="Neue Aufgabe, z. B. Offerte senden" aria-label="Neue Aufgabe"><input id="td" data-keep type="date" aria-label="Fällig am"><button class="btn" data-act="taskadd" data-id="${esc(c.id)}">${I.plus} Hinzufügen</button></div>
     ${tasks.length ? tasks.map(t => taskRow(c, t, false)).join('') : '<p class="muted small">Keine Aufgaben</p>'}
-  </section>
-  <section class="sec"><button class="btn danger" data-act="del" data-id="${esc(c.id)}">Kunde löschen</button></section>`;
+  </section>`;
+}
+
+function tabAnalyse(c) {
+  let d = null; try { d = (JSON.parse(localStorage.getItem('onia:vorsorge:v1') || '{}').byKunde || {})[c.id] || null; } catch (e) {}
+  const sm = d && d.summary, href = `vorsorge.html?kunde=${encodeURIComponent(c.id)}`;
+  let h = `<section class="sec" style="border-top:0;margin-top:6px"><div class="sech"><h2>Vorsorge-Analyse</h2></div>`;
+  if (sm && Array.isArray(sm.faelle) && sm.faelle.length) {
+    h += `<p class="muted small">Stand ${esc(new Date(sm.ts).toLocaleDateString('de-CH'))} · Beträge pro Monat</p>`;
+    h += sm.faelle.map(f => { const p = Math.round((f.deckung || 0) * 100); const cls = !f.basis ? '' : p >= 100 ? 'ok' : p >= 85 ? 'warn' : 'bad';
+      return `<a class="irow" href="${href}" style="text-decoration:none"><span><span class="it">${esc(f.titel)}</span><span class="is">${f.basis ? (f.luecke > 0 ? 'Lücke ' + chf(Math.round(f.luecke / 12)) + ' pro Monat' : 'Bedarf gedeckt') : 'Lohn noch nicht erfasst'}${f.kapitalLuecke > 0 ? ' · fehlendes Kapital ' + chf(f.kapitalLuecke) : ''}</span></span><span class="ir">${f.basis ? `<span class="chip ${cls}">${p} %</span>` : ''}</span></a>`; }).join('');
+    h += `<a class="btn block" style="margin-top:14px" href="${href}">Analyse öffnen</a>`;
+  } else {
+    h += `<p class="muted small">Noch keine Analyse. Sie zeigt die Vorsorgelücken bei Pensionierung, Invalidität und Tod, übernimmt die Daten aus dem CRM und liest Vorsorgeausweise per Foto ein.</p><a class="btn block" style="margin-top:12px" href="${href}">Analyse starten</a>`;
+  }
+  return h + `</section>`;
 }
 
 function tabKK(c) {
@@ -785,7 +829,6 @@ function tabVorsorge(c) {
   const a = c.vorsorge.filter(v => v.saeule === '3a'), b = c.vorsorge.filter(v => v.saeule === '3b');
   const sm = (arr, l) => `<div class="tile"><span class="tl">${l}</span><span class="tv">${arr.length ? 'Ja' : 'Nein'}</span><span class="ts">${arr.length ? esc(`${arr.length} ${arr.length === 1 ? 'Vertrag' : 'Verträge'} · ${chf(sumBy(arr, 'saldo'))}`) : 'Nichts erfasst'}</span></div>`;
   let h = `<div class="tiles">${sm(a, 'Säule 3a')}${sm(b, 'Säule 3b')}</div>`;
-  h += `<a class="btn block" style="margin-top:12px" href="vorsorge.html?kunde=${encodeURIComponent(c.id)}">Vorsorge-Analyse öffnen</a>`;
   // 1. AHV
   const ahv = c.ahv;
   h += `<section class="sec"><div class="sech"><h2>1. AHV</h2></div>`;
@@ -1500,7 +1543,7 @@ async function startLeadPaste() {
   const t = await askArea('Lead aus Anfrage einfügen', 'Füge die Anfrage-Mail oder den Text der Anfrage ein. ONIA erkennt Name, E-Mail, Telefon und Ort.');
   if (!t) return;
   const d = parseLead(t), dup = d.email ? S.customers.find(c => c.email && norm(c.email) === norm(d.email)) : null;
-  if (dup) { toast('Schon erfasst: ' + fullName(dup)); S.selId = dup.id; S.tab = 'uebersicht'; go('detail'); return; }
+  if (dup) { toast('Schon erfasst: ' + fullName(dup)); S.selId = dup.id; S.tab = 'aufgaben'; go('detail'); return; }
   startForm(null, d, 'anfrage', [], null); S.formLead = true;
 }
 const leadTs = c => c.leadDatum || (isLead(c) ? (c.erstellt || 0) : 0);
@@ -1596,7 +1639,7 @@ async function saveForm() {
     await saveCustomer(o);
     S.saving = false; S.draft = null; S.photos.forEach(p => URL.revokeObjectURL(p.url)); S.photos = [];
     toast(existing ? 'Änderungen gespeichert' : 'Kunde gespeichert');
-    S.view = 'detail'; S.selId = o.id; S.tab = 'uebersicht';
+    S.view = 'detail'; S.selId = o.id; S.tab = 'aufgaben';
     try { history.pushState({ view: 'detail', id: o.id }, ''); } catch (e) {}
     render(); window.scrollTo(0, 0);
   } catch (e) { S.saving = false; toast(dbErr(e)); render(); }
@@ -1726,7 +1769,7 @@ document.addEventListener('click', async e => {
   const a = t.dataset.act, id = t.dataset.id;
   switch (a) {
     case 'tab': go(t.dataset.view); break;
-    case 'open': S.showAllLog = false; S.tab = 'uebersicht'; go('detail', id); break;
+    case 'open': S.showAllLog = false; S.tab = 'aufgaben'; S.detOpen = false; go('detail', id); break;
     case 'new': startForm(null, { status: S.lf === 'leads' ? 'Lead: Neu' : 'Kunde' }, 'manuell', [], null); break;
     case 'edit': startForm(id, byId(id), 'manuell', [], null); break;
     case 'cancelform': S.formLead = false; S.draft = null; go(S.formId ? 'detail' : 'list', S.formId || undefined); break;
@@ -1830,6 +1873,7 @@ document.addEventListener('change', async e => {
     if (added.length) { await mutate(c.id, x => x.verlauf.push({ ts: Date.now(), text: `${added.length} ${added.length === 1 ? 'Dokument' : 'Dokumente'} hinzugefügt (Allgemein)` })); toast('Dokument gespeichert'); }
   } else if (id === 'autof' && S.item) { S.item.auto = e.target.checked; ls.set(AUTO, e.target.checked ? '1' : '0'); }
 });
+document.addEventListener('toggle', e => { if (e.target && e.target.id === 'cdet') S.detOpen = e.target.open; }, true);
 document.addEventListener('focusout', e => { if (e.target.id === 'mbody' && S.mail) S.mail.cur = [e.target.selectionStart, e.target.selectionEnd]; });
 document.addEventListener('input', e => {
   if (e.target.id === 'ltxt' && S.letter) S.letter.text = e.target.value;
@@ -1851,7 +1895,7 @@ async function init() {
     const qp = new URLSearchParams(location.search), kid = qp.get('kunde');
     if (kid && S.customers.some(c => c.id === kid)) {
       history.replaceState({ view: 'list' }, '', location.pathname);
-      S.view = 'detail'; S.selId = kid; S.tab = qp.get('tab') || 'uebersicht';
+      S.view = 'detail'; S.selId = kid; S.tab = qp.get('tab') || 'aufgaben';
       history.pushState({ view: 'detail', id: kid }, '');
     }
   } catch (e) {}

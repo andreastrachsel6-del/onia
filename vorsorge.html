@@ -1198,7 +1198,7 @@ async function toJpeg(file){
 function fillSelect(){
   const d = cur(); if (!d) return;
   $('backTxt').textContent = CRMC ? crmName(CRMC) : 'Kunden';
-  $('bBack').href = 'index.html?kunde=' + encodeURIComponent(KID) + '&tab=vorsorge';
+  $('bBack').href = 'index.html?kunde=' + encodeURIComponent(KID) + '&tab=analyse';
   document.title = 'Vorsorge-Analyse ' + dName(d);
 }
 function askDelete(){
@@ -1231,6 +1231,7 @@ const COL = { ahv:'var(--ahv)', pk:'var(--pk)', uvg:'var(--uvg)', privat:'var(--
 $('ursSeg').addEventListener('click', e=>{ const b = e.target.closest('[data-urs]'); if (!b) return; const d = cur(); d.ursache = b.dataset.urs; save(); render(); });
 function render(){
   const d = cur(), r = calc(d), v = curView(d);
+  try { const sv = r.views[verh(d) ? 'gemeinsam' : 'p0'] || []; d.summary = { ts: Date.now(), faelle: sv.map(f=>({ titel: f.titel, luecke: f.luecke, bedarf: f.bedarf, deckung: f.deckung, basis: f.basis, kapitalLuecke: f.kapitalLuecke || 0 })) }; save(); } catch(e){}
   document.querySelectorAll('[data-urs]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.urs === (d.ursache||'krankheit')));
   const f = store.period==='m' ? 1/12 : 1, per = store.period==='m' ? 'pro Monat' : 'pro Jahr';
   const P = r.P;
