@@ -39,7 +39,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .wrap{max-width:620px;margin:0 auto}
 
-header.top{position:sticky;top:0;z-index:20;background:transparent;pointer-events:none;transition:opacity .08s linear;color:var(--ink);padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+header.top{position:sticky;top:0;z-index:20;background:transparent;pointer-events:none;color:var(--ink);padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
 header.top .wrap{pointer-events:auto;position:relative;z-index:1;display:flex;align-items:center;gap:10px}
 header.top .wm{height:54px;width:auto;display:block;flex:none}
 header.top span{margin-left:auto;font-size:15px;color:var(--ink);opacity:1}
@@ -1907,7 +1907,7 @@ async function init() {
     const logo = hd.querySelector('.wm') || hd;
     const t = document.querySelector('.hero h1') || document.querySelector('main h1, .ttitle');
     let o;
-    if (t) { const gap = t.getBoundingClientRect().top - logo.getBoundingClientRect().bottom; o = Math.max(0, Math.min(1, gap / 14)); }
+    if (t) { const r = t.getBoundingClientRect(), lb = logo.getBoundingClientRect().bottom; const endY = Math.max(20, r.top + window.scrollY + r.height / 2 - lb); o = Math.max(0, Math.min(1, 1 - window.scrollY / endY)); }
     else o = Math.max(0, 1 - window.scrollY / 60);
     hd.style.opacity = o.toFixed(2); hd.style.visibility = o < 0.03 ? 'hidden' : '';
   };
