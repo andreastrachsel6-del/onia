@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F4F1E8">
+<link rel="manifest" href="onia-manifest.json">
+<link rel="icon" href="onia-icon-192.png">
+<link rel="apple-touch-icon" href="onia-icon-192.png">
+<title>Vorsorgekompass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: ONIA-CRM-Look – Marmorgrund, weisse Karten, Gold für aktive Elemente, Navy für Text; mobil mit fester Tab-Leiste unten */
+:root{
+  --bg:#F4F1E8; --surface:#FFFFFF; --sunk:#EFEADF; --ink:#09152B; --muted:#24406F; --soft:#6B7A93; --line:#E6DFCF;
+  --gold:#D4C49D; --gold-deep:#B99C72; --ring:#E1BA56; --dark:#2E3134;
+  --accent:#B99C72; --accent-ink:#09152B;
+  --ahv:#24406F; --pk:#B99C72; --privat:#7E9CC4; --partner:#C6BFAE; --gap:#B4443A;
+  --ok:#2F7A52; --warn:#A86A1A;
+  --f-display:"Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body:"Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r:14px; --shadow:0 1px 2px rgba(9,21,43,.06), 0 2px 10px rgba(9,21,43,.05);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background-color:var(--bg);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .012' numOctaves='5' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .72 0 0 0 0 .64 0 0 0 0 .5 0 0 0 -2.2 1.25'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23m)' opacity='.55'/%3E%3C/svg%3E");background-attachment:fixed;color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold-deep);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(250,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1320px;margin:0 auto;padding:10px 16px;display:flex;gap:10px 16px;align-items:center;flex-wrap:wrap}
+.brand{display:flex;align-items:flex-end;gap:12px;margin-right:auto;min-width:0}
+.brand img{height:46px;width:auto;display:block}
+.brand .firm{font-size:13px;color:var(--muted);padding-bottom:4px;white-space:nowrap}
+.count{font-size:15px;color:var(--ink);white-space:nowrap}
+.dossier{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,input,textarea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-width:0}
+textarea{width:100%;min-height:90px;resize:vertical}
+.btn{border:1px solid var(--gold);background:var(--surface);border-radius:10px;padding:9px 14px;cursor:pointer;font-weight:500;white-space:nowrap;color:var(--ink)}
+.btn:hover{background:#FBF8F1}
+.btn.primary{background:var(--gold);border-color:var(--gold);box-shadow:var(--shadow);font-weight:600}
+.btn.primary:hover{background:#CDBB90}
+.btn.danger{color:var(--gap)}
+.btn.ghost{border-color:transparent;background:transparent}
+#dossierSel{max-width:240px;box-shadow:var(--shadow);border-color:transparent;font-weight:500}
+
+.bar-msg{max-width:1320px;margin:0 auto;padding:0 16px}
+.msg{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);box-shadow:var(--shadow);border-radius:var(--r);padding:10px 14px;margin-top:10px}
+.msg b{font-weight:600}
+
+main{max-width:1320px;margin:0 auto;padding:16px;padding-block:18px 40px;display:grid;grid-template-columns:minmax(330px,420px) minmax(0,1fr);gap:20px;align-items:start}
+.pane{min-width:0}
+.form-pane{display:flex;flex-direction:column;gap:10px}
+details.sec{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow)}
+details.sec>summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:baseline;gap:10px;font-weight:700;font-size:16px;color:var(--ink)}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:2px solid var(--gold-deep);border-bottom:2px solid var(--gold-deep);transform:rotate(45deg);align-self:center;flex:none}
+details.sec[open]>summary::after{transform:rotate(-135deg)}
+summary .sum{font-weight:400;font-size:13.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:2px 16px 16px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.wide{grid-column:1/-1}
+.f label{font-size:12.5px;font-weight:500;color:var(--muted)}
+.f .in{position:relative;display:flex}
+.f .in input,.f .in select{width:100%;background:#FCFBF8}
+.f .in input:focus,.f .in select:focus,textarea:focus{border-color:var(--gold);background:#fff;outline:none;box-shadow:0 0 0 3px rgba(212,196,157,.35)}
+.f .in .u{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--soft);pointer-events:none}
+.f .in input.has-u{padding-right:48px}
+.f .hint{font-size:12px;color:var(--soft)}
+.f input[type=range]{padding:0;border:0;accent-color:var(--gold-deep);background:transparent}
+.rangev{font-weight:700;font-size:13px;color:var(--ink)}
+.subhead{grid-column:1/-1;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+
+.res-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.res-head h1{font-weight:700;font-size:24px;line-height:1.15;margin:0;text-wrap:balance;margin-right:auto;min-width:0;display:flex;align-items:center;gap:12px}
+.res-head h1 .av{flex:none;width:52px;height:52px;border-radius:50%;background:var(--dark);border:2.5px solid var(--ring);color:#fff;display:grid;place-items:center;font-size:19px;font-weight:600}
+.res-head h1 .nm{min-width:0}
+.res-head h1 small{display:block;font-size:14px;font-weight:400;color:var(--muted);margin-top:3px}
+.seg{display:inline-flex;gap:8px}
+.seg button{border:0;background:var(--surface);box-shadow:var(--shadow);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:500;font-size:14px;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--gold)}
+.badge{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:var(--ink);border-radius:6px;padding:2px 7px;vertical-align:middle;margin-left:6px}
+
+.cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.case{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.case-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.case-h h2{font-weight:700;font-size:19px;margin:0}
+.case-h p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.pill{font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.pill.ok{background:#E3F0E8;color:var(--ok)}
+.pill.mid{background:#F6EAD5;color:var(--warn)}
+.pill.bad{background:#F5E0DD;color:var(--gap)}
+.gapnum{display:flex;flex-direction:column}
+.gapnum .lbl{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);font-weight:700}
+.gapnum .v{font-weight:700;font-size:32px;line-height:1.1;letter-spacing:-.01em}
+.gapnum .v.neg{color:var(--gap)}
+.gapnum .v.pos{color:var(--ok)}
+.gapnum .v small{font-size:14px;font-weight:500;color:var(--muted);margin-left:5px;letter-spacing:0}
+
+.stack{position:relative;padding-top:18px}
+.stack .track{display:flex;height:26px;border-radius:7px;overflow:hidden;background:var(--sunk)}
+.stack .seg-b{height:100%;min-width:0}
+.stack .seg-b+.seg-b{box-shadow:inset 1.5px 0 0 var(--surface)}
+.stack .gap-b{background:repeating-linear-gradient(-45deg,rgba(180,68,58,.45) 0 4px,transparent 4px 8px);outline:1.5px solid var(--gap);outline-offset:-1.5px;border-radius:0 7px 7px 0}
+.stack .need{position:absolute;top:10px;bottom:-4px;width:2px;background:var(--ink)}
+.stack .need span{position:absolute;top:-12px;transform:translateX(-50%);font-size:11px;font-weight:700;white-space:nowrap}
+.stack .need.end span{transform:translateX(-100%)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin:2px 0 14px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+table.bd{width:100%;border-collapse:collapse;font-size:13.5px}
+table.bd td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.bd td:last-child{text-align:right;white-space:nowrap;padding-left:8px}
+table.bd td .i{display:block;font-size:11.5px;color:var(--soft)}
+table.bd .dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px}
+table.bd tr.t td{font-weight:700;border-bottom:0;padding-top:9px}
+table.bd tr.n td{color:var(--muted);border-bottom:0}
+table.bd tr.g td{color:var(--gap);font-weight:700;border-bottom:0}
+.cap{background:#FAF7EF;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+.cap b{font-weight:700}
+
+.notes{margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px}
+.box{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;min-width:0}
+.box h3{font-weight:700;font-size:16px;margin:0 0 8px}
+.box ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:5px}
+.kz{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:13px}
+.kz span:nth-child(odd){color:var(--muted)}
+.kz span:nth-child(even){text-align:right;font-weight:600}
+.foot{font-size:12px;color:var(--soft);margin-top:14px;max-width:80ch}
+.pdfrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}
+.pdfrow .st{font-size:13px;color:var(--muted)}
+
+dialog{border:0;border-radius:16px;background:var(--surface);color:var(--ink);padding:0;width:min(440px,calc(100% - 32px));box-shadow:0 10px 40px rgba(9,21,43,.2)}
+dialog::backdrop{background:rgba(9,21,43,.4)}
+dialog form{padding:20px;display:grid;gap:12px}
+dialog h3{margin:0;font-size:19px}
+dialog .row{display:flex;gap:8px;justify-content:flex-end}
+
+/* Tab-Leiste unten (mobil) */
+.bnav{display:none}
+@media (max-width:900px){
+  main{grid-template-columns:minmax(0,1fr);padding-block:14px 120px}
+  main[data-view="form"] .res-pane{display:none}
+  main[data-view="res"] .form-pane{display:none}
+  .brand img{height:38px}
+  .brand .firm{display:none}
+  .dossier .btn:not(.keep){display:none}
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);align-items:end;position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-radius:22px 22px 0 0;box-shadow:0 -2px 16px rgba(9,21,43,.08);padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px))}
+  .bnav button{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px 8px;font-size:13px;color:var(--muted);cursor:pointer;position:relative}
+  .bnav button svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .bnav button[aria-current="true"]{color:var(--gold-deep)}
+  .bnav button[aria-current="true"]::after{content:"";position:absolute;bottom:0;left:22%;right:22%;height:3px;border-radius:2px;background:var(--gold-deep)}
+  .bnav .fab{margin-top:-34px}
+  .bnav .fab span.c{width:58px;height:58px;border-radius:50%;background:var(--dark);border:2.5px solid var(--ring);display:grid;place-items:center;box-shadow:0 4px 12px rgba(9,21,43,.25)}
+  .bnav .fab svg{stroke:#fff}
+}
+@media (max-width:420px){ .fields{grid-template-columns:1fr} #dossierSel{max-width:170px} .count{display:none} }
+@media (prefers-reduced-motion:no-preference){ .seg-b{transition:flex-basis .35s ease} }
+
+/* v2: Ansicht, 3a-Karten, Scan */
+.viewbar{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.viewbar[hidden]{display:none!important}
+.chip{border:0;background:var(--surface);box-shadow:var(--shadow);padding:10px 18px;border-radius:12px;cursor:pointer;font-size:15px;font-weight:500;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--gold)}
+.chip .sub{font-size:12px;color:var(--muted);margin-left:6px;font-weight:400}
+.acc{display:grid;gap:10px;grid-column:1/-1}
+.acc-card{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#FCFBF8}
+.acc-card .acc-h{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.acc-card .acc-h input{flex:1 1 140px;font-weight:600}
+.typ{display:inline-flex;background:var(--sunk);border-radius:9px;padding:3px}
+.typ button{border:0;background:transparent;padding:5px 10px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted)}
+.typ button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.x{border:0;background:transparent;color:var(--gap);cursor:pointer;font-size:13px;padding:6px}
+.addbtn{grid-column:1/-1;border:1.5px dashed var(--gold);background:transparent;border-radius:12px;padding:10px;cursor:pointer;font-weight:500;color:var(--ink)}
+.addbtn:hover{background:#FBF8F1}
+.tot3a{grid-column:1/-1;font-size:13px;color:var(--muted);display:flex;justify-content:space-between}
+.scan{grid-column:1/-1;display:grid;gap:10px}
+.scanbtn{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--dark);color:#fff;border:2px solid var(--ring);border-radius:12px;padding:12px;cursor:pointer;font-weight:600;font-size:15px}
+.scanbtn svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.8}
+.scanbtn[aria-disabled="true"]{opacity:.6;pointer-events:none}
+.scanst{font-size:13px;color:var(--muted)}
+.scanst.err{color:var(--gap)}
+.meta{font-size:12.5px;color:var(--muted);background:#FAF7EF;border-radius:8px;padding:6px 10px}
+.review{border:1.5px solid var(--gold);border-radius:12px;padding:12px;background:#FFFDF7;display:grid;gap:8px}
+.review h4{margin:0;font-size:14.5px}
+.review label{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:baseline;font-size:13.5px;cursor:pointer}
+.review label input{accent-color:var(--gold-deep)}
+.review label s{color:var(--soft);font-size:12px;text-decoration:none}
+.review label b{font-weight:600;white-space:nowrap}
+.review .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp 0.8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (max-width:420px){ .acc-card{grid-template-columns:1fr} }
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ch{border:1.5px solid var(--line);background:#FCFBF8;border-radius:14px;padding:16px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;color:var(--ink)}
+.ch:hover,.ch:focus-visible{border-color:var(--gold);background:#FFFDF7}
+.ch svg{width:40px;height:40px;stroke:var(--gold-deep);fill:none;stroke-width:1.6}
+.ch b{font-size:16px}
+.ch span{font-size:12px;color:var(--muted)}
+:root{--uvg:#5E8C7A}
+.seg{flex-wrap:wrap}
+.res-head .seg+.seg{margin-left:4px}
+.spark{display:flex;align-items:flex-end;gap:2px;height:46px;margin:10px 0 3px}
+.spark i{flex:1;background:var(--gap);opacity:.65;border-radius:2px 2px 0 0}
+.spark-ax{display:flex;justify-content:space-between;font-size:11px;color:var(--soft);margin-bottom:8px}
+.caprow{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.caprow small{color:var(--soft);font-size:11.5px}
+.caprow b{white-space:nowrap}
+.caprow.g{color:var(--gap);font-weight:700;margin-top:6px}
+.mass{border-top:1px solid var(--line);padding-top:10px}
+.mass h4{margin:0 0 6px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep)}
+.mass ul{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:5px}
+.scanbtn.light{background:var(--surface);color:var(--ink);border:1.5px solid var(--gold)}
+.scanbtn.light svg{stroke:var(--gold-deep)}
+.scan+.acc{margin-top:2px}
+.kids{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.kid{display:inline-flex;align-items:center;gap:4px;background:#FCFBF8;border:1px solid var(--line);border-radius:10px;padding:3px 4px 3px 3px}
+.kid input{width:70px;border:0;background:transparent;padding:6px 6px;font-weight:600}
+.kid small{font-size:12px;color:var(--muted)}
+.kid .x{font-size:17px;line-height:1;padding:4px 7px}
+.kidadd{border:1.5px dashed var(--gold);background:transparent;border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:500;color:var(--ink)}
+.scancard{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;display:grid;gap:8px}
+.scancard span{font-size:12.5px;color:var(--muted);text-align:center}
+.scandlg{width:min(540px,calc(100% - 24px));max-height:calc(100% - 40px)}
+.sbox{padding:20px;display:grid;gap:12px}
+.sbox h3{margin:0;font-size:19px;text-wrap:balance}
+.sbox p{margin:0;font-size:14px;color:var(--muted)}
+.sbox .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:4px}
+.shead{display:grid;gap:4px}
+.stag{justify-self:start;background:var(--gold);border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.sstand{font-size:13px!important}
+.starget{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;flex-wrap:wrap}
+.starget select{flex:1;min-width:160px;font-weight:600}
+.srows{display:grid;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.srow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline;padding:10px 12px;font-size:14px;cursor:pointer;background:#FFFDF8}
+.srow+.srow{border-top:1px solid var(--line)}
+.srow input{accent-color:var(--gold-deep);transform:translateY(2px)}
+.srow s{display:block;text-decoration:none;color:var(--soft);font-size:12px}
+.srow b{font-weight:600;text-align:right;max-width:52vw;overflow-wrap:anywhere}
+.snone{background:#FAF7EF;border-radius:10px;padding:10px 12px}
+.swarn{color:var(--warn)!important;font-size:13px!important}
+.sbusy,.sdone{display:flex;gap:14px;align-items:center}
+.sbusy b,.sdone b{font-size:16px}
+.spin.dark{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--gold-deep);flex:none}
+.sdone svg{width:40px;height:40px;fill:none;stroke:var(--ok);stroke-width:2;flex:none}
+.sbox .row{position:sticky;bottom:-20px;background:var(--surface);padding:10px 0 4px;margin-bottom:-4px}
+@media (max-width:900px){ .scancard{display:none} }
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;opacity:0}
+label.scanbtn{user-select:none;-webkit-user-select:none}
+.bnav label.fab{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px 8px;font-size:13px;color:var(--muted);cursor:pointer;margin-top:-34px;-webkit-tap-highlight-color:transparent}
+.bnav label.fab span.c{width:58px;height:58px;border-radius:50%;background:var(--dark);border:2.5px solid var(--ring);display:grid;place-items:center;box-shadow:0 4px 12px rgba(9,21,43,.25)}
+.bnav label.fab svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:1.8}
+.scanbtn.big{padding:16px;font-size:16px}
+.paste{border:1.5px dashed var(--gold);border-radius:12px;padding:14px;text-align:center;font-size:13.5px;color:var(--muted);background:#FFFDF7;min-height:52px;outline:none;-webkit-user-select:text;user-select:text}
+.paste:focus{border-style:solid;color:var(--ink)}
+.sdiag{font-size:12.5px!important;color:var(--soft)!important}
+.slog{margin:0;padding:0;list-style:none;display:grid;gap:6px;font-size:13.5px}
+.slog li{display:grid;grid-template-columns:20px 1fr;gap:6px;color:var(--muted)}
+.slog li span{font-weight:700;text-align:center}
+.slog li.ok span{color:var(--ok)}
+.slog li.err{color:var(--gap)}
+.slog li.run{color:var(--ink);font-weight:500}
+.pick{position:relative;overflow:hidden;border-radius:12px}
+.pick .scanbtn{pointer-events:none}
+.pick input.scanIn{position:absolute;inset:0;width:100%;height:100%;opacity:0.011;cursor:pointer;font-size:200px;z-index:2;-webkit-appearance:none;appearance:none}
+.scanbtn.light svg{stroke:var(--gold-deep)}
+
+.backlink{display:inline-flex;align-items:center;gap:4px;color:var(--ink);text-decoration:none;font-weight:500;font-size:15px;padding:6px 8px 6px 0;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.backlink svg{width:20px;height:20px;stroke:var(--gold-deep);fill:none;stroke-width:2.2;flex:none}
+.top-in .brand{margin-right:auto}
+@media (max-width:900px){ .top-in{flex-wrap:nowrap} .dossier{display:none} .brand img{height:34px} }
+.picker{max-width:720px;margin:0 auto;padding:20px 16px 60px;display:grid;gap:12px}
+.picker h1{margin:0;font-size:26px}
+.picker p{margin:0;color:var(--muted)}
+.picker input{width:100%;padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);border:0;font-size:16px}
+.picklist{display:grid;gap:8px}
+.pick-row{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px;text-decoration:none;color:var(--ink)}
+.pick-row .av{width:44px;height:44px;border-radius:50%;background:var(--dark);border:2px solid var(--ring);color:#fff;display:grid;place-items:center;font-weight:600;flex:none}
+.pick-row span:nth-child(2){display:grid;flex:1;min-width:0}
+.pick-row small{color:var(--muted)}
+.muted{color:var(--muted)}
+
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0;font-size:14px}[hidden]{display:none!important}img{max-width:100%}</style>
+</head>
+<body>
+
+
+<header class="top"><div class="top-in">
+  <a class="backlink" id="bBack" href="index.html"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span id="backTxt">Kunden</span></a>
+  <div class="brand"><img src="data:image/png;base64,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" alt="ONIA – One. Independent. Advice." width="313" height="132"><span class="firm">Vorsorge-Analyse</span></div>
+  <div class="dossier"><button class="btn ghost" id="bMore" type="button" aria-haspopup="dialog">Einstellungen</button></div>
+</div></header>
+<div class="bar-msg" id="msgArea"></div>
+
+<section class="picker" id="picker" hidden>
+  <h1>Vorsorge-Analyse</h1>
+  <p>Wähle einen Kunden aus dem CRM.</p>
+  <input id="pickQ" type="search" placeholder="Kunde suchen" aria-label="Kunde suchen">
+  <div id="pickList" class="picklist"></div>
+</section>
+<main id="main" data-view="form">
+  <div class="viewbar" id="viewbar" role="group" aria-label="Ansicht"></div>
+  <section class="pane form-pane" id="formPane" aria-label="Erfassung"></section>
+  <section class="pane res-pane" aria-label="Analyse">
+    <div class="res-head">
+      <h1 id="resTitle">Vorsorge-Analyse</h1>
+      <div class="seg" role="group" aria-label="Darstellung">
+        <button type="button" id="pM" aria-pressed="true">pro Monat</button>
+        <button type="button" id="pY" aria-pressed="false">pro Jahr</button>
+      </div>
+      <div class="seg" role="group" aria-label="Ursache bei Invalidität und Tod" id="ursSeg">
+        <button type="button" data-urs="krankheit" aria-pressed="true">Krankheit</button>
+        <button type="button" data-urs="unfall" aria-pressed="false">Unfall</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--ahv)"></i>AHV / IV</span>
+      <span><i style="background:var(--pk)"></i>Pensionskasse</span>
+      <span><i style="background:var(--privat)"></i>3a, Vermögen, privat</span>
+      <span><i style="background:var(--uvg)"></i>Unfallversicherung</span>
+      <span><i style="background:var(--partner)"></i>Einkommen Partner/in</span>
+      <span><i style="background:repeating-linear-gradient(-45deg,var(--gap) 0 2px,transparent 2px 4px);outline:1px solid var(--gap)"></i>Lücke</span>
+    </div>
+    <div class="cases" id="cases"></div>
+    <div class="pdfrow">
+      <button class="btn primary" id="bPdf" type="button">Kundenbericht als PDF</button>
+      <button class="btn" id="bExp" type="button">Dossier exportieren</button>
+      <label class="btn" for="impFile">Dossier importieren</label>
+      <input type="file" id="impFile" accept=".json,application/json" hidden>
+      <span class="st" id="pdfSt" role="status"></span>
+    </div>
+    <div class="notes">
+      <div class="box"><h3>Hinweise zu diesem Dossier</h3><ul id="hinweise"></ul></div>
+      <div class="box"><h3>Kennzahlen 2026</h3>
+        <div class="kz">
+          <span>AHV-Rente min. / max. pro Monat</span><span>1’260 / 2’520</span>
+          <span>13. AHV-Rente</span><span>ab Dez. 2026</span>
+          <span>Plafond Ehepaar (150 %)</span><span>3’780</span>
+          <span>BVG-Eintrittsschwelle</span><span>22’680</span>
+          <span>Koordinationsabzug</span><span>26’460</span>
+          <span>Max. koordinierter Lohn</span><span>64’260</span>
+          <span>BVG-Mindestzins / Umwandlungssatz</span><span>1.25 % / 6.8 %</span>
+          <span>Säule 3a mit PK</span><span>7’258</span>
+        </div>
+      </div>
+    </div>
+    <p class="foot">Vereinfachte Schätzung auf Basis der gesetzlichen Mindestleistungen 2026 und der erfassten Angaben. Invalidität und Tod werden wahlweise nach Krankheit oder Unfall (mit UVG) berechnet. Nicht berücksichtigt: Lohnfortzahlung und Krankentaggeld während der Wartefrist, Kürzungen wegen Überentschädigung oder Plafonierung der Kinder- und Hinterlassenenrenten, unterschiedliche Pensionierungszeitpunkte, Steuern und Teuerung. Massgebend sind die Rentenvorausberechnung der Ausgleichskasse und der Vorsorgeausweis der Pensionskasse. Die Daten bleiben nur in diesem Browser gespeichert; beim Ausweis-Scan wird das Bild zur Auswertung an Claude gesendet.</p>
+  </section>
+</main>
+
+<nav class="bnav" aria-label="Navigation">
+  <button type="button" id="nForm" aria-current="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.8a3.3 3.3 0 0 1 0 6.4M18 14.8c2 .6 3.2 2.4 3.5 5.2"/></svg>Erfassen</button>
+  <button type="button" id="nRes"><svg viewBox="0 0 24 24"><path d="M3 20h18M6 20V11M10.5 20V5M15 20v-7M19.5 20V9"/></svg>Analyse</button>
+  <button type="button" class="fab" id="nScan"><span class="c"><svg viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg></span>Scannen</button>
+  <button type="button" id="nPdf"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg>PDF</button>
+  <button type="button" id="nMore"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mehr</button>
+</nav>
+
+
+<dialog id="dlgSet"><form method="dialog" id="setForm">
+  <h3>Einstellungen</h3>
+  <div class="f"><label for="sFirma">Firma</label><input id="sFirma" placeholder="z. B. ONIA"></div>
+  <div class="f"><label for="sBerater">Beraterin / Berater</label><input id="sBerater" placeholder="Vor- und Nachname"></div>
+  <div class="f"><label for="sKontakt">Kontaktzeile im Bericht</label><input id="sKontakt" placeholder="Telefon, E-Mail, Adresse"></div>
+  <div class="row" style="justify-content:space-between">
+    <span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="sSync">Daten aus CRM neu laden</button><button class="btn" type="button" id="sBak">Alle Analysen sichern</button><label class="btn" for="impFile">Sicherung laden</label><button class="btn danger" type="button" id="sDel">Analyse zurücksetzen</button></span>
+    <span style="display:flex;gap:8px"><button class="btn" value="cancel" type="submit">Abbrechen</button><button class="btn primary" value="ok" type="submit">Speichern</button></span>
+  </div>
+</form></dialog>
+<dialog id="dlgScan" class="scandlg"><div class="sbox" id="sbox"></div></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const LOGO = document.querySelector('.brand img').src;
+// ===== Rechenkern Vorsorge-Analyse (Kennzahlen 2026) =====
+const K = {
+  jahr: 2026,
+  ahvMinM: 1260, ahvMaxM: 2520,
+  eintritt: 22680, koord: 26460, maxLohn: 90720, minKoord: 3780, maxKoord: 64260,
+  uws: 0.068, max3a: 7258, plafond: 1.5, uvgMax: 148200,
+  vorbezug: 0.068, aufschub: [0, 0.052, 0.108, 0.171, 0.24, 0.315],
+  sparzins: 0.02
+};
+
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const opt = v => (v === '' || v === null || v === undefined || !isFinite(parseFloat(v))) ? null : parseFloat(v);
+const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
+
+// AHV/IV-Vollrente pro Monat nach Rentenformel (Art. 34 AHVG), Skala 44
+function ahvRenteM(E, luecken) {
+  const mn = K.ahvMinM, mx = K.ahvMaxM;
+  let r;
+  if (E <= 12 * mn) r = mn;
+  else if (E <= 36 * mn) r = 0.74 * mn + 13 / 600 * E;
+  else r = 1.04 * mn + 8 / 600 * E;
+  r = clamp(r, mn, mx);
+  const skala = clamp(44 - num(luecken), 0, 44) / 44;
+  return Math.round(r * skala);
+}
+function refAlter(gebJahr, g) {
+  if (g !== 'f') return 65;
+  if (gebJahr <= 1960) return 64;
+  if (gebJahr === 1961) return 64.25;
+  if (gebJahr === 1962) return 64.5;
+  if (gebJahr === 1963) return 64.75;
+  return 65;
+}
+function gutschrift(a) {
+  if (a < 25) return 0;
+  if (a <= 34) return 0.07;
+  if (a <= 44) return 0.10;
+  if (a <= 54) return 0.15;
+  return 0.18;
+}
+function koordLohn(lohn) {
+  if (lohn < K.eintritt) return 0;
+  return clamp(Math.min(lohn, K.maxLohn) - K.koord, K.minKoord, K.maxKoord);
+}
+
+// ----- Grundlagen einer Person
+function person(p, label) {
+  const alter = K.jahr - num(p.gebJahr);
+  const ref = refAlter(num(p.gebJahr), p.geschlecht);
+  const pens = opt(p.pensAlter) !== null ? clamp(num(p.pensAlter), 58, 70) : ref;
+  const jahreBis = Math.max(0, Math.ceil(pens) - alter);
+  const lohn = num(p.lohn);
+  const ahvM = ahvRenteM(opt(p.ahvEinkommen) ?? lohn, p.ahvLuecken);
+  const pk = p.pk || {};
+  const kl = koordLohn(lohn);
+  const z = num(pk.zins) / 100;
+  const hinweise = [], n = label;
+
+  // PK: Projektion bis Referenzalter (für IV/Tod) und bis Wunschalter
+  let agh = num(pk.guthaben), aghOZ = num(pk.guthaben), aghRef = null, aghPens = null;
+  const bis = Math.max(Math.ceil(ref), Math.ceil(pens));
+  for (let a = alter; a < bis; a++) {
+    if (a === Math.ceil(pens)) aghPens = agh;
+    if (a === Math.ceil(ref)) aghRef = agh;
+    const aktiv = a < Math.ceil(pens);
+    agh = agh * (1 + z) + (aktiv ? kl * gutschrift(Math.min(a, 64)) : 0);
+    if (a < Math.ceil(ref)) aghOZ += kl * gutschrift(a);
+  }
+  if (aghPens === null) aghPens = agh;
+  if (aghRef === null) aghRef = agh;
+  const uwsP = clamp(K.uws + 0.002 * (pens - ref), 0.05, 0.08);
+  let altersPk;
+  if (opt(pk.altersrente) !== null) altersPk = num(pk.altersrente) * (aghRef > 0 ? aghPens / aghRef : 1) * (uwsP / K.uws);
+  else altersPk = aghPens * uwsP;
+  const ivEst = (kl > 0 || num(pk.guthaben) > 0) ? aghOZ * K.uws : 0;
+  const P = {
+    alters: altersPk,
+    iv: opt(pk.ivRente) ?? ivEst,
+    qA: (opt(pk.altersrente) !== null ? 'Vorsorgeausweis' : 'BVG-Minimum geschätzt') + (pens !== ref ? `, umgerechnet auf Alter ${fmtAlter(pens)}` : ''),
+    qI: opt(pk.ivRente) !== null ? 'Vorsorgeausweis' : 'BVG-Minimum geschätzt',
+    tfk: num(pk.todesfallkapital),
+    kapital: aghPens
+  };
+  P.ehegatte = opt(pk.ehegattenrente) ?? 0.6 * P.iv;
+  P.qE = opt(pk.ehegattenrente) !== null ? 'Vorsorgeausweis' : '60 % der IV-Rente geschätzt';
+  P.kind = opt(pk.kinderrente) ?? 0.2 * P.iv;
+
+  // AHV-Altersrente mit Vorbezug / Aufschub
+  let ahvAltM = ahvM, ahvInfo = '';
+  if (pens < ref) {
+    const start = Math.max(pens, 63);
+    const jahre = Math.ceil(ref - start - 1e-9);
+    ahvAltM = Math.round(ahvM * (1 - K.vorbezug * jahre));
+    ahvInfo = `Vorbezug ${jahre} J., −${(K.vorbezug * jahre * 100).toFixed(1)} %`;
+    if (pens < 63) hinweise.push(`${n}: Pensionierung mit ${fmtAlter(pens)}, die AHV kann frühestens mit 63 bezogen werden. Für ${Math.ceil(63 - pens)} Jahr(e) braucht es eine Überbrückung.`);
+  } else if (pens > ref) {
+    const j = Math.min(5, Math.floor(pens - ref));
+    ahvAltM = Math.round(ahvM * (1 + K.aufschub[j]));
+    ahvInfo = j ? `Aufschub ${j} J., +${(K.aufschub[j] * 100).toFixed(1)} %` : '';
+  }
+
+  // 3a-Lösungen
+  let kap3a = 0, heute3a = 0, tod3a = 0, eu3a = 0, einz3a = 0;
+  const konten = (p.s3a || []).map(k => {
+    const g = num(k.guthaben), e = num(k.einzahlung), r = num(k.rendite) / 100;
+    let proj = g; for (let i = 0; i < jahreBis; i++) proj = proj * (1 + r) + e;
+    if (k.typ === 'vers' && opt(k.ablaufkapital) !== null) proj = num(k.ablaufkapital);
+    const tod = k.typ === 'vers' && opt(k.todesfallkapital) !== null ? Math.max(num(k.todesfallkapital), g) : g;
+    kap3a += proj; heute3a += g; tod3a += tod; einz3a += e;
+    if (k.typ === 'vers') eu3a += num(k.euRente);
+    return { ...k, proj, tod };
+  });
+  const eu = eu3a + num(p.euRente);
+  const tfkPriv = num(p.todesfallkapital);
+
+  if (lohn > 0 && lohn < K.eintritt) hinweise.push(`${n}: Lohn unter der BVG-Eintrittsschwelle (CHF ${fmt(K.eintritt)}), keine obligatorische Pensionskasse.`);
+  if (num(p.ahvLuecken) > 0) hinweise.push(`${n}: ${num(p.ahvLuecken)} fehlende AHV-Beitragsjahre kürzen die Rente um ${(num(p.ahvLuecken) / 44 * 100).toFixed(1)} %. Fehlende Jahre lassen sich bis 5 Jahre rückwirkend nachzahlen.`);
+  if (einz3a > K.max3a) hinweise.push(`${n}: 3a-Einzahlungen total CHF ${fmt(einz3a)}, über dem Maximum von CHF ${fmt(K.max3a)} mit Pensionskasse.`);
+  if (lohn >= K.eintritt && (opt(pk.altersrente) === null || opt(pk.ivRente) === null)) hinweise.push(`${n}: Pensionskasse teilweise als BVG-Minimum geschätzt. Mit dem Vorsorgeausweis wird es genauer.`);
+
+  return { p, label: n, alter, ref, pens, jahreBis, lohn, ahvM, ahvAltM, ahvInfo, kl, pk: P, konten, kap3a, heute3a, tod3a, eu, eu3a, einz3a, tfkPriv, hinweise };
+}
+
+// ----- Ganzer Haushalt
+function calc(d) {
+  const verh = d.zivil === 'verheiratet';
+  const unfall = d.ursache === 'unfall';
+  const kids = (d.kids || []).map(k => K.jahr - num(k.gebJahr)).filter(a => a >= 0 && a <= 24);
+  const kinder = kids.length;
+  const A = person(d.p[0], vn(d.p[0], 'Person 1'));
+  const B = verh ? person(d.p[1], vn(d.p[1], 'Person 2')) : null;
+  const P = B ? [A, B] : [A];
+  const haushalt = P.reduce((s, x) => s + x.lohn, 0);
+  const verm = num(d.vermoegen);
+  const verzehr = Math.max(1, num(d.verzehrJahre) || 25);
+  const hinweise = P.flatMap(x => x.hinweise);
+  const ursTxt = unfall ? 'Unfall' : 'Krankheit';
+
+  // AHV im Alter, ggf. plafoniert
+  let ahvAlt = P.map(x => x.ahvAltM), plaf = false;
+  if (B && ahvAlt[0] + ahvAlt[1] > K.plafond * K.ahvMaxM) {
+    const f = K.plafond * K.ahvMaxM / (ahvAlt[0] + ahvAlt[1]);
+    ahvAlt = ahvAlt.map(v => Math.round(v * f)); plaf = true;
+  }
+  const sparen = (luecke, x) => {
+    if (luecke <= 0) return null;
+    const kap = luecke * verzehr, n = Math.max(1, x.jahreBis), r = K.sparzins;
+    return { kap, mt: kap * r / (Math.pow(1 + r, n) - 1) / 12, jahre: n };
+  };
+
+  // Pensionierung gemeinsam
+  const kapAlle = P.reduce((s, x) => s + x.kap3a, 0) + verm;
+  const alterQ = [
+    { key: 'ahv', label: B ? 'AHV-Renten Ehepaar (inkl. 13. Rente)' : 'AHV-Rente (inkl. 13. Rente)', wert: (ahvAlt[0] + (ahvAlt[1] || 0)) * 13, info: [plaf ? 'plafoniert auf 150 %' : '', ...P.map(x => x.ahvInfo ? `${B ? x.label + ': ' : ''}${x.ahvInfo}` : '')].filter(Boolean).join(' · ') },
+    ...P.map(x => ({ key: 'pk', label: B ? `Pensionskasse ${x.label}` : 'Pensionskasse Altersrente', wert: x.pk.alters, info: x.pk.qA })),
+    { key: 'privat', label: `Kapitalverzehr 3a und Vermögen (${verzehr} J.)`, wert: kapAlle / verzehr, info: `Kapital bei Pensionierung CHF ${fmt(kapAlle)}` }
+  ];
+  const fAlter = mkFall('alter', B ? 'Pensionierung gemeinsam' : 'Pensionierung', B ? `${P.map(x => `${x.label} mit ${fmtAlter(x.pens)}`).join(', ')}` : `mit ${fmtAlter(A.pens)}`, num(d.zielAlter), haushalt, alterQ, null);
+  fAlter.massnahme = massAlter(fAlter, sparen(fAlter.luecke, P.reduce((a, x) => x.jahreBis < a.jahreBis ? x : a)), P);
+
+  // Pensionierung einzeln
+  const alterEinzeln = P.map((x, i) => {
+    const q = [
+      { key: 'ahv', label: 'AHV-Rente (inkl. 13. Rente)', wert: ahvAlt[i] * 13, info: [plaf ? 'Anteil nach Plafonierung' : '', x.ahvInfo].filter(Boolean).join(' · ') },
+      { key: 'pk', label: 'Pensionskasse Altersrente', wert: x.pk.alters, info: x.pk.qA },
+      { key: 'privat', label: `Kapitalverzehr 3a${B ? ' und halbes Vermögen' : ' und Vermögen'} (${verzehr} J.)`, wert: (x.kap3a + (B ? verm / 2 : verm)) / verzehr, info: `3a bei Pensionierung CHF ${fmt(x.kap3a)}` }
+    ];
+    const f = B ? mkFall('alter', `Pensionierung ${x.label}`, `mit ${fmtAlter(x.pens)} · gemessen am eigenen Lohn`, num(d.zielAlter), x.lohn, q, i)
+                : mkFall('alter', 'Pensionierung', `mit ${fmtAlter(x.pens)}`, num(d.zielAlter), x.lohn, q, i);
+    f.massnahme = massAlter(f, sparen(f.luecke, x), [x]);
+    return f;
+  });
+  if (!B) alterEinzeln[0] = fAlter;
+
+  // Invalidität je Person
+  const iv = P.map((x, i) => {
+    const o = P[1 - i];
+    const q = [{ key: 'ahv', label: 'IV-Rente', wert: x.ahvM * 12, info: '' }];
+    if (kinder) q.push({ key: 'ahv', label: `IV-Kinderrenten (${kinder}× 40 %)`, wert: kinder * 0.4 * x.ahvM * 12, info: '' });
+    const ivSum = x.ahvM * 12 * (1 + 0.4 * kinder);
+    let uvg = 0;
+    if (unfall) {
+      const VV = Math.min(x.lohn, K.uvgMax);
+      uvg = Math.max(0, Math.min(0.8 * VV, 0.9 * VV - ivSum));
+      q.push({ key: 'uvg', label: 'UVG-Invalidenrente', wert: uvg, info: 'Komplementärrente, max. 90 % des versicherten Verdienstes mit IV' });
+    }
+    let pkSum = x.pk.iv + kinder * x.pk.kind, pkInfo = x.pk.qI;
+    if (unfall) { const max = Math.max(0, 0.9 * x.lohn - ivSum - uvg); if (pkSum > max) { pkSum = max; pkInfo = 'gekürzt wegen Überentschädigung (90 %)'; } }
+    q.push({ key: 'pk', label: kinder ? `Pensionskasse IV- und Kinderrenten` : 'Pensionskasse IV-Rente', wert: pkSum, info: pkInfo });
+    if (x.eu3a) q.push({ key: 'privat', label: 'Erwerbsunfähigkeitsrente aus 3a-Versicherung', wert: x.eu3a, info: '' });
+    if (x.eu - x.eu3a) q.push({ key: 'privat', label: 'Erwerbsunfähigkeitsrente privat', wert: x.eu - x.eu3a, info: '' });
+    if (o && o.lohn) q.push({ key: 'partner', label: `Einkommen ${o.label}`, wert: o.lohn, info: '' });
+    const f = mkFall('iv', `Invalidität ${B ? x.label : ''}`.trim(), `nach ${ursTxt}, IV-Grad 100 % · ab Rentenbeginn`, num(d.zielIv), haushalt, q, i);
+    if (f.luecke > 0) f.massnahme = [`Erwerbsunfähigkeitsrente von ca. CHF ${fmt(Math.ceil(f.luecke / 1200) * 1200)} pro Jahr bis Alter ${fmtAlter(x.ref)} (Wartefrist 24 Monate, abgestimmt auf das Krankentaggeld).`];
+    return f;
+  });
+
+  // Tod je Person, mit Verlauf bis die Kinder 25 sind bzw. bis zur Pensionierung des Partners
+  const tod = P.map((x, i) => {
+    const o = P[1 - i];
+    if (!o && !kinder) return null;
+    const frau = o && o.p.geschlecht === 'f';
+    const witweLebenslang = o && frau && (kinder > 0 || o.alter >= 45);
+    const VV = Math.min(x.lohn, K.uvgMax);
+    const basis = o ? haushalt : x.lohn;
+    const bedarf = Math.round(basis * num(d.zielTod) / 100);
+    const jahr = t => {
+      const kE = kids.filter(a => a + t <= 24).length, k18 = kids.filter(a => a + t < 18).length;
+      const witwe = o && (witweLebenslang || (!frau && k18 > 0) || (frau && kE > 0));
+      const ahvW = witwe ? 0.8 * x.ahvM * 12 : 0, ahvK = kE * 0.4 * x.ahvM * 12;
+      let uvg = 0;
+      if (unfall) uvg = Math.max(0, Math.min(Math.min(0.7 * VV, (witwe ? 0.4 * VV : 0) + kE * 0.15 * VV), 0.9 * VV - ahvW - ahvK));
+      let pkS = (o ? x.pk.ehegatte : 0) + kE * x.pk.kind, gek = false;
+      if (unfall) { const max = Math.max(0, 0.9 * x.lohn - ahvW - ahvK - uvg); if (pkS > max) { pkS = max; gek = true; } }
+      const lohnO = o ? o.lohn : 0;
+      return { kE, witwe, ahvW, ahvK, uvg, pkS, gek, lohnO, total: ahvW + ahvK + uvg + pkS + lohnO };
+    };
+    const j0 = jahr(0);
+    const q = [];
+    if (o) {
+      if (j0.witwe) q.push({ key: 'ahv', label: frau ? 'AHV-Witwenrente (80 %)' : 'AHV-Witwerrente (80 %)', wert: j0.ahvW, info: frau ? (witweLebenslang ? 'lebenslang' : '') : 'bis das jüngste Kind 18 ist' });
+      else hinweise.push(`Tod ${x.label}: kein Anspruch auf AHV-Hinterlassenenrente für ${o.label} bei den erfassten Angaben.`);
+    }
+    if (kinder) q.push({ key: 'ahv', label: `AHV-Waisenrenten (${kinder}× 40 %)`, wert: j0.ahvK, info: 'bis 18, in Ausbildung bis 25' });
+    if (unfall) q.push({ key: 'uvg', label: 'UVG-Hinterlassenenrenten', wert: j0.uvg, info: 'Komplementärrenten, max. 90 % mit AHV' });
+    q.push({ key: 'pk', label: o ? (kinder ? 'PK-Ehegatten- und Waisenrenten' : 'PK-Ehegattenrente') : 'PK-Waisenrenten', wert: j0.pkS, info: j0.gek ? 'gekürzt wegen Überentschädigung (90 %)' : (o ? x.pk.qE : '') });
+    if (o && o.lohn) q.push({ key: 'partner', label: `Einkommen ${o.label}`, wert: o.lohn, info: '' });
+    const f = mkFall('tod', `Todesfall ${B ? x.label : ''}`.trim(), `nach ${ursTxt} · Hinterbliebene: ${o ? o.label + (kinder ? ' und Kinder' : '') : 'Kinder'}`, num(d.zielTod), basis, q, i);
+    // Verlauf
+    const hKids = kinder ? Math.max(...kids.map(a => 25 - a)) : 0;
+    const hPart = o ? Math.max(0, Math.ceil(o.ref) - o.alter) : 0;
+    const H = Math.min(30, Math.max(hKids, hPart));
+    let bedarfKap = 0; const verlauf = [];
+    for (let t = 0; t < H; t++) { const j = jahr(t); const g = Math.max(0, bedarf - j.total); bedarfKap += g; verlauf.push(Math.round(g)); }
+    f.verlauf = verlauf; f.horizont = H; f.bedarfKap = Math.round(bedarfKap);
+    f.horizontTxt = o ? (hKids > hPart ? 'bis das jüngste Kind 25 ist' : `bis zur Pensionierung von ${o.label}`) : 'bis das jüngste Kind 25 ist';
+    f.kapitalTeile = [['Todesfallkapital Pensionskasse', x.pk.tfk], ['Säule 3a', x.tod3a], ['Todesfallkapital privat', x.tfkPriv], ['Freies Vermögen', verm]].filter(t => t[1] > 0);
+    f.kapital = f.kapitalTeile.reduce((s, t) => s + t[1], 0);
+    f.kapitalLuecke = Math.max(0, f.bedarfKap - f.kapital);
+    if (f.kapitalLuecke > 0) f.massnahme = [`Todesfallkapital von ca. CHF ${fmt(Math.ceil(f.kapitalLuecke / 10000) * 10000)} (z. B. Risikoversicherung, abnehmend über ${H} Jahre).`];
+    else if (f.luecke > 0) f.massnahme = ['Die laufende Lücke ist durch das vorhandene Kapital gedeckt. Keine zusätzliche Todesfallversicherung nötig.'];
+    return f;
+  });
+
+  if (P.some(x => x.alter >= x.ref)) hinweise.push('Mindestens eine Person hat das Referenzalter erreicht. Die Risikofälle vor der Pensionierung sind für sie nicht mehr relevant.');
+  if (unfall) hinweise.push('Berechnung für Unfall: UVG-Leistungen auf dem versicherten Verdienst (max. CHF 148’200), Pensionskasse auf 90 % des Lohns begrenzt.');
+
+  const views = { gemeinsam: [fAlter, ...iv, ...tod.filter(Boolean)] };
+  P.forEach((x, i) => { views['p' + i] = [alterEinzeln[i], iv[i], tod[i]].filter(Boolean); });
+  return { verh, kinder, kids, unfall, P, haushalt, verm, views, hinweise };
+}
+
+function massAlter(f, sp, P) {
+  if (!sp) return null;
+  const out = [`Für die Lücke braucht es bei Pensionierung zusätzlich ca. CHF ${fmt(sp.kap)} Kapital. Das entspricht einem Sparbetrag von ca. CHF ${fmt(Math.ceil(sp.mt / 10) * 10)} pro Monat über ${sp.jahre} Jahre (2 % Rendite).`];
+  P.forEach(x => {
+    const frei = K.max3a - x.einz3a;
+    if (x.lohn >= K.eintritt && frei > 0) out.push(`${P.length > 1 ? x.label + ": " : ""}3a-Potenzial von CHF ${fmt(frei)} pro Jahr noch frei, steuerlich abzugsfähig.`);
+  });
+  out.push('PK-Einkäufe prüfen (Einkaufspotenzial gemäss Vorsorgeausweis), steuerlich abzugsfähig.');
+  return out;
+}
+
+function vn(p, fb) { return String(p.vorname || '').trim() || fb; }
+
+function mkFall(id, titel, untertitel, ziel, basis, quellen, person) {
+  quellen.forEach(q => q.wert = Math.round(q.wert));
+  quellen = quellen.filter(q => q.wert > 0 || q.key === 'ahv' || q.key === 'pk');
+  const total = quellen.reduce((a, q) => a + q.wert, 0);
+  const bedarf = Math.round(basis * ziel / 100);
+  const luecke = Math.max(0, bedarf - total);
+  return { id, titel, untertitel, ziel, basis, bedarf, total, luecke, deckung: bedarf ? total / bedarf : 1, quellen, person, massnahme: null };
+}
+
+function fmt(n) {
+  const r = Math.round(n);
+  return (r < 0 ? '-' : '') + String(Math.abs(r)).replace(/\B(?=(\d{3})+(?!\d))/g, '’');
+}
+function fmtAlter(a) {
+  const j = Math.floor(a), m = Math.round((a - j) * 12);
+  return m ? `${j} J. ${m} M.` : `${j}`;
+}
+
+if (typeof module !== 'undefined') module.exports = { calc, ahvRenteM, koordLohn, fmt };
+
+
+// ===== Datenmodell
+const newPerson = (g) => ({ vorname:'', nachname:'', gebJahr:1985, geschlecht:g, lohn:'', ahvEinkommen:'', ahvLuecken:0, pensAlter:'',
+  pk:{ kasse:'', datum:'', guthaben:'', zins:1.25, altersrente:'', ivRente:'', ehegattenrente:'', kinderrente:'', todesfallkapital:'' },
+  s3a:[], euRente:'', todesfallkapital:'' });
+const newDossier = () => ({ id:uid(), zivil:'ledig', kids:[], ursache:'krankheit', vermoegen:'', verzehrJahre:25, zielAlter:80, zielIv:90, zielTod:80, notizen:'', p:[newPerson('m'), newPerson('f')] });
+const new3a = (typ) => ({ anbieter:'', typ, guthaben:'', einzahlung:'', rendite: typ==='vers'?0.5:1.5, ablaufkapital:'', euRente:'', todesfallkapital:'' });
+
+function beispiel(){
+  const d = newDossier();
+  Object.assign(d, { beispiel:true, zivil:'verheiratet', kids:[{gebJahr:2016},{gebJahr:2019}], vermoegen:50000, notizen:'Beispieldossier zur Ansicht. Mit «+ Neuer Kunde» ein eigenes Dossier anlegen.' });
+  Object.assign(d.p[0], { vorname:'Marco', nachname:'Muster', gebJahr:1984, geschlecht:'m', lohn:110000 });
+  Object.assign(d.p[0].pk, { guthaben:180000 });
+  d.p[0].s3a = [ Object.assign(new3a('bank'), { anbieter:'Bank 3a-Konto', guthaben:40000, einzahlung:3629 }),
+                 Object.assign(new3a('vers'), { anbieter:'3a-Police', guthaben:20000, einzahlung:3629, ablaufkapital:110000, euRente:12000, todesfallkapital:100000 }) ];
+  Object.assign(d.p[1], { vorname:'Sara', nachname:'Muster', gebJahr:1986, geschlecht:'f', lohn:45000 });
+  Object.assign(d.p[1].pk, { guthaben:40000, altersrente:9000 });
+  d.p[1].s3a = [ Object.assign(new3a('bank'), { anbieter:'Bank 3a-Konto', guthaben:15000, einzahlung:3000 }) ];
+  return d;
+}
+function migrateV1(o){
+  const d = newDossier();
+  d.kids = Array.from({length: Math.max(0, parseInt(o.kinder)||0)}, ()=>({ gebJahr: K.jahr - 8 }));
+  ['zivil','vermoegen','verzehrJahre','zielAlter','zielIv','zielTod','notizen','beispiel'].forEach(k=>{ if (k in o) d[k]=o[k]; });
+  const nm = String(o.name||'').replace(/^Beispiel:\s*/,'').trim().split(/\s+/);
+  Object.assign(d.p[0], { vorname:nm[0]||'', nachname:nm.slice(1).join(' '), gebJahr:o.gebJahr, geschlecht:o.geschlecht, lohn:o.lohn, ahvEinkommen:o.ahvEinkommen, ahvLuecken:o.ahvLuecken, euRente:o.euRente, todesfallkapital:o.todesfallkapital });
+  Object.assign(d.p[0].pk, { guthaben:o.pkGuthaben, zins:o.pkZins, altersrente:o.pkAltersrente, ivRente:o.pkIvRente, ehegattenrente:o.pkEhegattenrente, kinderrente:o.pkKinderrente, todesfallkapital:o.pkTodesfallkapital });
+  if (o.s3aGuthaben || o.s3aEinzahlung) d.p[0].s3a = [Object.assign(new3a('bank'), { anbieter:'Säule 3a', guthaben:o.s3aGuthaben, einzahlung:o.s3aEinzahlung, rendite:o.s3aRendite })];
+  const pn = String(o.partnerName||'').trim().split(/\s+/);
+  Object.assign(d.p[1], { vorname:pn[0]||'', nachname:pn.slice(1).join(' '), gebJahr:o.partnerGebJahr||1987, geschlecht:o.partnerGeschlecht||'f', lohn:o.partnerLohn, ahvEinkommen:o.partnerAhvEinkommen, ahvLuecken:o.partnerAhvLuecken||0 });
+  Object.assign(d.p[1].pk, { altersrente:o.partnerPkRente });
+  return d;
+}
+
+// ===== CRM-Anbindung (gleicher Speicher wie das ONIA CRM)
+const CRM_LS = 'fintra:v1', CRM_KEY = 'fintra:apikey';
+const KID = new URLSearchParams(location.search).get('kunde') || '';
+function crmList(){ try { const l = JSON.parse(localStorage.getItem(CRM_LS) || '[]'); return Array.isArray(l) ? l : []; } catch(e){ return []; } }
+function crmGet(id){ return crmList().find(c=>c.id===id) || null; }
+function crmUpdate(id, fn){
+  try {
+    const list = crmList(), c = list.find(x=>x.id===id); if (!c) return false;
+    ['aufgaben','verlauf','vorsorge','pks','fzks','anlagen'].forEach(k=>{ if (!Array.isArray(c[k])) c[k] = []; });
+    fn(c); c.geaendert = Date.now();
+    localStorage.setItem(CRM_LS, JSON.stringify(list)); return true;
+  } catch(e){ return false; }
+}
+const kuid = () => 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const toIso = s => { s = String(s||'').trim(); const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(s); return m ? `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}` : (/^\d{4}-\d{2}-\d{2}$/.test(s) ? s : ''); };
+const fromIso = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s||'')); return m ? `${m[3]}.${m[2]}.${m[1]}` : ''; };
+const nz = v => { const n = parseFloat(String(v ?? '').replace(/[’'\s]/g,'')); return isFinite(n) ? n : 0; };
+const crmName = c => [c.vorname, c.nachname].filter(Boolean).join(' ') || 'Ohne Namen';
+
+// Stammdaten, Pensionskasse, 3a und Vermögen aus dem CRM übernehmen (CRM ist führend)
+function syncFromCrm(d, c){
+  const p = d.p[0];
+  if (c.vorname) p.vorname = c.vorname;
+  if (c.nachname) p.nachname = c.nachname;
+  const gj = /^(\d{4})-/.exec(c.geburtsdatum || ''); if (gj) p.gebJahr = +gj[1];
+  if (c.anrede === 'Frau') p.geschlecht = 'f'; else if (c.anrede === 'Herr') p.geschlecht = 'm';
+  if (c.zivilstand) d.zivil = /verheiratet|eingetragen|partnerschaft/i.test(c.zivilstand) && !/getrennt|geschieden|aufgel/i.test(c.zivilstand) ? 'verheiratet' : 'ledig';
+  if (verh(d) && c.partner && !d.p[1].vorname) { const t = String(c.partner).trim().split(/\s+/); d.p[1].vorname = t[0] || ''; d.p[1].nachname = t.slice(1).join(' ') || p.nachname || ''; }
+  const pks = c.pks || [], fzks = c.fzks || [];
+  const g = pks.reduce((s,x)=>s+nz(x.guthaben),0) + fzks.reduce((s,x)=>s+nz(x.guthaben),0);
+  if (g > 0) {
+    p.pk.guthaben = g;
+    const names = pks.map(x=>x.name).filter(Boolean);
+    if (names.length) p.pk.kasse = names.join(', ') + (fzks.some(x=>nz(x.guthaben)) ? ' + Freizügigkeit' : '');
+    const st = [...pks, ...fzks].map(x=>x.stand).filter(Boolean).sort().pop(); if (st) p.pk.datum = fromIso(st);
+  }
+  const v3a = (c.vorsorge || []).filter(v=>v.saeule === '3a');
+  p.s3a = p.s3a.filter(k=>!k.crmId || v3a.some(v=>v.id === k.crmId));
+  v3a.forEach(v=>{
+    let k = p.s3a.find(x=>x.crmId === v.id);
+    if (!k) { k = new3a(v.art === 'Versicherungspolice' ? 'vers' : 'bank'); k.crmId = v.id; p.s3a.push(k); }
+    k.anbieter = [v.anbieter, v.produkt].filter(Boolean).join(' · ') || k.anbieter;
+    k.typ = v.art === 'Versicherungspolice' ? 'vers' : 'bank';
+    if (v.saldo !== undefined && v.saldo !== '') k.guthaben = nz(v.saldo);
+    if (v.einzahlung !== undefined && v.einzahlung !== '') k.einzahlung = nz(v.einzahlung);
+  });
+  const anl = (c.anlagen || []).reduce((s,x)=>s+nz(x.betrag),0);
+  if (anl > 0) d.vermoegen = anl;
+  d.crmSync = Date.now();
+  return d;
+}
+
+// ===== Speicher der Analysen (pro CRM-Kunde)
+const LS = 'onia:vorsorge:v1';
+let store = load();
+function normDossier(d){
+  if (!d || typeof d !== 'object' || !Array.isArray(d.p)) return null;
+  const base = newDossier();
+  d = Object.assign(base, d, { p: d.p.slice(0,2).map((x,k)=>Object.assign(newPerson(k?'f':'m'), x, { pk:Object.assign(newPerson('m').pk, x.pk||{}), s3a:Array.isArray(x.s3a)?x.s3a:[] })) });
+  while (d.p.length < 2) d.p.push(newPerson('f'));
+  if (!Array.isArray(d.kids)) d.kids = [];
+  if (d.ursache !== 'unfall') d.ursache = 'krankheit';
+  return d;
+}
+function load(){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(LS)); } catch(e){}
+  if (!s || typeof s !== 'object') s = {};
+  s.byKunde = s.byKunde && typeof s.byKunde === 'object' ? s.byKunde : {};
+  Object.keys(s.byKunde).forEach(k=>{ const d = normDossier(s.byKunde[k]); if (d) s.byKunde[k] = d; else delete s.byKunde[k]; });
+  s.settings = s.settings || { firma:'ONIA', berater:'', kontakt:'' };
+  s.period = s.period || 'm'; s.view = s.view || 'gemeinsam';
+  return s;
+}
+let saveT;
+function save(){ clearTimeout(saveT); saveT = setTimeout(()=>{ try{ localStorage.setItem(LS, JSON.stringify(store)); }catch(e){} }, 200); }
+function uid(){ return 'd'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+let CRMC = KID ? crmGet(KID) : null;
+function ensureDossier(){
+  if (!CRMC) return null;
+  let d = store.byKunde[KID];
+  if (!d) { d = newDossier(); d.id = KID; store.byKunde[KID] = d; }
+  syncFromCrm(d, CRMC); save();
+  return d;
+}
+const cur = () => store.byKunde[KID];
+const verh = d => d.zivil === 'verheiratet';
+function dName(d){
+  const a = d.p[0], b = d.p[1];
+  const fa = [a.vorname, a.nachname].filter(Boolean).join(' ') || 'Kunde';
+  if (!verh(d)) return fa;
+  const fb = [b.vorname, b.nachname].filter(Boolean).join(' ');
+  if (!fb) return fa;
+  if (a.nachname && a.nachname === b.nachname) return `${a.vorname} & ${b.vorname} ${a.nachname}`;
+  return `${fa} & ${fb}`;
+}
+const pName = (d,i) => d.p[i].vorname || (i ? 'Partner/in' : 'Kunde');
+
+// ===== Hilfen
+const $ = id => document.getElementById(id);
+const parseChf = v => { const t = String(v).replace(/[’'\s]/g,'').replace(',', '.'); return t === '' ? '' : (isFinite(parseFloat(t)) ? parseFloat(t) : ''); };
+const fmtIn = v => (v === '' || v === null || v === undefined || !isFinite(parseFloat(v))) ? '' : fmt(v);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const getP = (o, path) => path.split('.').reduce((a,k)=>a==null?a:a[k], o);
+function setP(o, path, v){ const ks = path.split('.'); const last = ks.pop(); const t = ks.reduce((a,k)=>a[k], o); t[last] = v; }
+
+// ===== Ansicht
+function views(d){ return verh(d) ? [['gemeinsam','Gemeinsam'],['p0',pName(d,0)],['p1',pName(d,1)]] : [['p0', 'Kunde']]; }
+function curView(d){ const v = store.view; return views(d).some(x=>x[0]===v) ? v : views(d)[0][0]; }
+function renderViewbar(){
+  const d = cur(), vb = $('viewbar');
+  vb.hidden = !verh(d);
+  const v = curView(d);
+  vb.innerHTML = views(d).map(([k,l])=>`<button type="button" class="chip" data-view="${k}" aria-pressed="${k===v}">${esc(l)}${k==='gemeinsam'?'<span class="sub">Haushalt</span>':''}</button>`).join('');
+}
+$('viewbar').addEventListener('click', e=>{ const b = e.target.closest('[data-view]'); if (!b) return; store.view = b.dataset.view; save(); refresh(); });
+
+// ===== Formular
+function F(path, l, t, o={}){ return Object.assign({path, l, t}, o); }
+function householdSecs(d){
+  return [
+    { id:'hh', titel:'Haushalt', open:true, sum:()=>{ const n = (d.kids||[]).length; return [verh(d)?'verheiratet':'ledig', n?`${n} Kind${n>1?'er':''}`:''].filter(Boolean).join(' · '); }, fields:[
+      F('zivil','Zivilstand','sel',{o:[['ledig','ledig / geschieden'],['verheiratet','verheiratet / eingetr. Partnerschaft']]}),
+      {kids:1},
+      F('vermoegen','Freies Vermögen (gemeinsam)','chf'),
+      F('verzehrJahre','Kapitalverzehr ab Pensionierung','int',{u:'Jahre'}),
+    ]},
+    { id:'ziel', titel:'Einkommensziele', sum:()=>`${d.zielAlter} / ${d.zielIv} / ${d.zielTod} %`, fields:[
+      {sub:'In Prozent des heutigen Haushaltseinkommens'},
+      F('zielAlter','Pensionierung','range',{w:1}), F('zielIv','Invalidität','range',{w:1}), F('zielTod','Hinterbliebene','range',{w:1}),
+    ]},
+    { id:'notiz', titel:'Bemerkungen für den Bericht', sum:()=>'', fields:[ F('notizen','Empfehlungen und Notizen','area',{w:1}) ]},
+  ];
+}
+function personSecs(d, i){
+  const p = d.p[i], b = `p.${i}`;
+  return [
+    { id:`pers${i}`, titel: verh(d) ? `Person · ${pName(d,i)}` : 'Person', open:true, sum:()=>[p.gebJahr, p.lohn?`CHF ${fmt(p.lohn)}`:''].filter(Boolean).join(' · '), fields:[
+      F(`${b}.vorname`,'Vorname','text'), F(`${b}.nachname`,'Nachname','text'),
+      F(`${b}.gebJahr`,'Jahrgang','year'), F(`${b}.geschlecht`,'Geschlecht','sel',{o:[['m','männlich'],['f','weiblich']]}),
+      F(`${b}.lohn`,'Bruttojahreslohn','chf',{w:1}),
+      F(`${b}.ahvEinkommen`,'Massg. Durchschnittseinkommen AHV','chf',{ph:'= Lohn'}), F(`${b}.ahvLuecken`,'Fehlende AHV-Jahre','int'),
+      F(`${b}.pensAlter`,'Gewünschtes Pensionierungsalter','int',{w:1, u:'Jahre', ph:`Referenzalter ${fmtAlter(refAlter(+p.gebJahr, p.geschlecht))}`, h:'Leer lassen für das ordentliche Alter. AHV-Vorbezug ab 63 möglich, Aufschub bis 70.'}),
+    ]},
+    { id:`pk${i}`, titel:'Pensionskasse', open:true, scan:i, sum:()=>p.pk.kasse || (p.pk.guthaben?`Guthaben CHF ${fmt(p.pk.guthaben)}`:''), fields:[
+      {scan:i},
+      F(`${b}.pk.guthaben`,'Altersguthaben heute','chf'), F(`${b}.pk.zins`,'Verzinsung','pct'),
+      F(`${b}.pk.altersrente`,'Projizierte Altersrente p.a.','chf',{ph:'schätzen'}), F(`${b}.pk.ivRente`,'IV-Rente p.a.','chf',{ph:'schätzen'}),
+      F(`${b}.pk.ehegattenrente`,'Ehegattenrente p.a.','chf',{ph:'schätzen'}), F(`${b}.pk.kinderrente`,'Kinder-/Waisenrente p.a.','chf',{ph:'schätzen'}),
+      F(`${b}.pk.todesfallkapital`,'Todesfallkapital','chf',{w:1}),
+    ]},
+    { id:`s3a${i}`, titel:'Säule 3a', open:true, sum:()=>p.s3a.length ? `${p.s3a.length} Lösung${p.s3a.length>1?'en':''} · CHF ${fmt(p.s3a.reduce((s,k)=>s+(parseFloat(k.guthaben)||0),0))}` : '', fields:[ {acc:i} ]},
+    { id:`risk${i}`, titel:'Private Risikoversicherungen', sum:()=>'', fields:[
+      {sub:'Ausserhalb der Säule 3a (3b)'},
+      F(`${b}.euRente`,'Erwerbsunfähigkeitsrente p.a.','chf'), F(`${b}.todesfallkapital`,'Todesfallkapital','chf'),
+    ]},
+  ];
+}
+let openState = {};
+function buildForm(){
+  const d = cur(), fp = $('formPane'), v = curView(d);
+  fp.querySelectorAll('details').forEach(x=>openState[x.dataset.id]=x.open);
+  let secs;
+  if (!verh(d)) secs = [...personSecs(d,0), ...householdSecs(d)];
+  else if (v === 'gemeinsam') secs = householdSecs(d);
+  else secs = personSecs(d, +v.slice(1));
+  fp.innerHTML = `<div class="scancard"><button type="button" class="scanbtn" data-scan="auto">${CAM}Dokument fotografieren oder hochladen</button><span>Vorsorgeausweis, 3a-Auszug, Police, Lohnausweis, IK-Auszug, Rentenvorausberechnung, ID, Familienausweis, Steuerausweis … Mehrere Seiten auf einmal möglich.</span></div>` + secs.map(sec=>{
+    const isOpen = sec.id in openState ? openState[sec.id] : !!sec.open;
+    return `<details class="sec" data-id="${sec.id}" ${isOpen?'open':''}><summary>${esc(sec.titel)}<span class="sum" data-sum="${sec.id}">${esc(sec.sum())}</span></summary>
+      <div class="fields">${sec.fields.map(f=>fieldHtml(f,d)).join('')}</div></details>`;
+  }).join('');
+  window.__secs = secs;
+}
+function fieldHtml(f, d){
+  if (f.sub) return `<div class="subhead">${f.sub}</div>`;
+  if (f.scan !== undefined) return scanHtml(d, f.scan);
+  if (f.acc !== undefined) return scanHtml(d, f.acc, 's3a') + accHtml(d, f.acc);
+  if (f.kids) return kidsHtml(d);
+  const id = 'f_'+f.path.replace(/\./g,'_'), v = getP(d, f.path), w = f.w ? ' wide' : '';
+  let ctl;
+  if (f.t === 'sel') ctl = `<select id="${id}" data-path="${f.path}">${f.o.map(([val,lab])=>`<option value="${val}" ${v===val?'selected':''}>${lab}</option>`).join('')}</select>`;
+  else if (f.t === 'area') ctl = `<textarea id="${id}" data-path="${f.path}">${esc(v)}</textarea>`;
+  else if (f.t === 'range') return `<div class="f${w}"><label for="${id}">${f.l} <span class="rangev" id="${id}_v">${v} %</span></label><input type="range" id="${id}" data-path="${f.path}" data-t="range" min="40" max="110" step="5" value="${v}"></div>`;
+  else ctl = inputHtml(id, f.path, f.t, v, f.u, f.ph);
+  return `<div class="f${w}"><label for="${id}">${f.l}</label><div class="in">${ctl}</div>${f.h?`<span class="hint">${f.h}</span>`:''}</div>`;
+}
+function inputHtml(id, path, t, v, u, ph){
+  const unit = u || (t==='chf'?'CHF':t==='pct'?'%':'');
+  const val = t==='chf' ? fmtIn(v) : esc(v);
+  const im = t==='text' ? 'text' : (t==='pct' ? 'decimal' : 'numeric');
+  return `<input id="${id}" data-path="${path}" data-t="${t}" inputmode="${im}" value="${val}" ${ph?`placeholder="${ph}"`:''} class="${unit?'has-u':''}" autocomplete="off">${unit?`<span class="u">${unit}</span>`:''}`;
+}
+function kidsHtml(d){
+  const ks = d.kids || [];
+  return `<div class="f wide"><label>Kinder (Jahrgang)</label><div class="kids">${ks.map((k,j)=>{ const a = K.jahr - (parseInt(k.gebJahr)||0);
+    return `<span class="kid"><input id="kid${j}" data-path="kids.${j}.gebJahr" data-t="year" inputmode="numeric" value="${esc(k.gebJahr)}" aria-label="Jahrgang Kind ${j+1}"><small>${a>=0&&a<=24?a+' J.':'ohne Rente'}</small><button type="button" class="x" data-delkid="${j}" aria-label="Kind entfernen">×</button></span>`; }).join('')}
+    <button type="button" class="kidadd" data-addkid>+ Kind</button></div><span class="hint">Waisen- und Kinderrenten bis 18, in Ausbildung bis 25.</span></div>`;
+}
+function accHtml(d, i){
+  const list = d.p[i].s3a;
+  const cards = list.map((k,j)=>{
+    const b = `p.${i}.s3a.${j}`, id = `a${i}_${j}`;
+    const fld = (key, l, t, wide) => `<div class="f${wide?' wide':''}"><label for="${id}_${key}">${l}</label><div class="in">${inputHtml(`${id}_${key}`, `${b}.${key}`, t, k[key])}</div></div>`;
+    return `<div class="acc-card">
+      <div class="acc-h"><input id="${id}_anb" data-path="${b}.anbieter" data-t="text" value="${esc(k.anbieter)}" placeholder="Anbieter, z. B. Bank oder Versicherung" aria-label="Anbieter">
+        <span class="typ" role="group" aria-label="Art"><button type="button" data-typ="${i}.${j}.bank" aria-pressed="${k.typ==='bank'}">Bank</button><button type="button" data-typ="${i}.${j}.vers" aria-pressed="${k.typ==='vers'}">Versicherung</button></span>
+        <button type="button" class="x" data-del3a="${i}.${j}" aria-label="3a-Lösung entfernen">Entfernen</button></div>
+      ${fld('guthaben', k.typ==='vers'?'Rückkaufswert / Guthaben':'Guthaben heute','chf')}
+      ${fld('einzahlung','Einzahlung p.a.','chf')}
+      ${k.typ==='vers'
+        ? fld('ablaufkapital','Ablaufkapital (Prognose)','chf') + fld('rendite','Verzinsung ohne Prognose','pct') + fld('euRente','Erwerbsunfähigkeitsrente p.a.','chf') + fld('todesfallkapital','Todesfallkapital','chf')
+        : fld('rendite','Erwartete Rendite','pct', true)}
+    </div>`;
+  }).join('');
+  const sumE = list.reduce((s,k)=>s+(parseFloat(k.einzahlung)||0),0);
+  return `<div class="acc">${cards}
+    ${list.length?`<div class="tot3a"><span>Einzahlungen total</span><span style="${sumE>K.max3a?'color:var(--gap);font-weight:600':''}">CHF ${fmt(sumE)} von ${fmt(K.max3a)}</span></div>`:''}
+    <div style="display:flex;gap:8px"><button type="button" class="addbtn" style="flex:1" data-add3a="${i}.bank">+ 3a Bank</button>
+    <button type="button" class="addbtn" style="flex:1" data-add3a="${i}.vers">+ 3a Versicherung</button></div></div>`;
+}
+function scanHtml(d, i, kind='pk'){
+  const pk = d.p[i].pk;
+  const meta = kind==='pk' && (pk.kasse||pk.datum) ? `<div class="meta">Übernommen aus Dokument${pk.kasse?' · '+esc(pk.kasse):''}${pk.datum?' · Stand '+esc(pk.datum):''}</div>` : '';
+  return `<div class="scan"><button type="button" class="scanbtn light" data-scan="p${i}">${CAM}${kind==='pk'?'Vorsorgeausweis scannen':'3a-Auszug oder Police scannen'}</button>${meta}</div>`;
+}
+function readField(el){
+  const t = el.dataset.t; let v = el.value;
+  if (t === 'chf' || t === 'pct') v = parseChf(v);
+  else if (t === 'int' || t === 'year' || t === 'range') v = v === '' ? '' : Math.round(parseChf(v) || 0);
+  return v;
+}
+function updateSums(){ (window.__secs||[]).forEach(sec=>{ const el = document.querySelector(`[data-sum="${sec.id}"]`); if (el) el.textContent = sec.sum(); }); }
+const fp = $('formPane');
+fp.addEventListener('input', e=>{
+  const el = e.target; if (!el.dataset.path) return;
+  const d = cur(); setP(d, el.dataset.path, readField(el)); d.updated = Date.now();
+  if (d.beispiel && el.dataset.path !== 'notizen') d.beispiel = false;
+  if (el.dataset.t === 'range') $(el.id+'_v').textContent = el.value+' %';
+  if (/vorname|nachname/.test(el.dataset.path)) { fillSelect(); renderViewbar(); }
+  if (/s3a\.\d+\.einzahlung/.test(el.dataset.path)) { const t = el.closest('.acc').querySelector('.tot3a span:last-child'); if (t) { const i = +el.dataset.path.split('.')[1]; const s = d.p[i].s3a.reduce((a,k)=>a+(parseFloat(k.einzahlung)||0),0); t.textContent = `CHF ${fmt(s)} von ${fmt(K.max3a)}`; t.style.cssText = s>K.max3a?'color:var(--gap);font-weight:600':''; } }
+  updateSums(); render(); save();
+});
+fp.addEventListener('change', e=>{
+  const el = e.target;
+  if (el.dataset.t === 'chf') el.value = fmtIn(parseChf(el.value));
+  if (/^kids\./.test(el.dataset.path || '')) buildForm();
+  if (el.dataset.path === 'zivil') { if (!verh(cur())) store.view = 'p0'; else store.view = 'gemeinsam'; save(); refresh(); }
+});
+fp.addEventListener('click', e=>{
+  const sb = e.target.closest('[data-scan]'); if (sb) { openScanner(sb.dataset.scan === 'auto' ? null : +sb.dataset.scan.slice(1)); return; }
+  const d = cur(), t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.add3a) { const [i,typ] = t.dataset.add3a.split('.'); d.p[+i].s3a.push(new3a(typ)); save(); buildForm(); render(); const ins = fp.querySelectorAll(`[data-path^="p.${i}.s3a."][data-t="text"]`); ins[ins.length-1]?.focus(); }
+  else if (t.dataset.del3a) { const [i,j] = t.dataset.del3a.split('.').map(Number); d.p[i].s3a.splice(j,1); save(); buildForm(); render(); }
+  else if (t.dataset.typ) { const [i,j,typ] = t.dataset.typ.split('.'); d.p[+i].s3a[+j].typ = typ; save(); buildForm(); render(); }
+  else if (t.dataset.addkid !== undefined) { d.kids = d.kids || []; d.kids.push({ gebJahr: K.jahr - 5 }); save(); buildForm(); render(); const ins = fp.querySelectorAll('[data-path^="kids."]'); ins[ins.length-1]?.focus(); ins[ins.length-1]?.select(); }
+  else if (t.dataset.delkid !== undefined) { d.kids.splice(+t.dataset.delkid,1); save(); buildForm(); render(); }
+});
+
+// ===== Dokument-Scan: beliebiges Dokument erkennen und eintragen
+let scanPref = null, scanCtl = null, scanRes = null;
+const apiKey = () => { try { return (localStorage.getItem(CRM_KEY) || '').trim(); } catch(e){ return ''; } };
+const FILEIC = '<svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>';
+const CAM = '<svg viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg>';
+function openScanner(pref){
+  scanPref = pref;
+  const ok = !!apiKey();
+  sboxHtml(`<div class="shead"><span class="stag">Dokument scannen</span><h3>Dokument erfassen</h3><p>Vorsorgeausweis, 3a, Police, Lohnausweis, AHV-Auszug, ID, Familien- oder Steuerdokument. Mehrere Seiten möglich.</p></div>
+    <div class="pick"><div class="scanbtn big">${CAM}Foto aufnehmen</div><input type="file" class="scanIn" accept="image/*" capture="environment" aria-label="Foto aufnehmen"></div>
+    <div class="pick"><div class="scanbtn big light">${FILEIC}Foto oder PDF auswählen</div><input type="file" class="scanIn" id="sPick" accept="image/*,application/pdf" multiple aria-label="Foto oder PDF auswählen"></div>
+    <div class="paste" id="sPaste" contenteditable="true" role="textbox" aria-label="Bild einfügen" inputmode="none">Oder Bild hier einfügen: lange tippen und «Einfügen» wählen</div>
+    <p class="sdiag">${ok ? 'Claude-Schlüssel aus dem CRM gefunden.' : 'Kein Claude-Schlüssel gefunden. Hinterlege ihn im CRM unter «Mehr» (gleicher Schlüssel wie beim Foto-Import).'}</p>
+    <div class="row"><button class="btn" type="button" data-close>Abbrechen</button></div>`);
+  const pz = $('sPaste');
+  pz.addEventListener('focus', ()=>{ if (pz.dataset.t !== '1') { pz.dataset.t = '1'; pz.textContent = ''; } });
+  pz.addEventListener('paste', ev=>{
+    const items = Array.from((ev.clipboardData && ev.clipboardData.items) || []);
+    const files = items.filter(it=>it.kind==='file').map(it=>it.getAsFile()).filter(Boolean);
+    ev.preventDefault();
+    if (files.length) handleFiles(files); else { pz.textContent = 'Kein Bild in der Zwischenablage. Kopiere zuerst ein Foto.'; pz.dataset.t = ''; }
+  });
+  pz.addEventListener('drop', ev=>{ ev.preventDefault(); const f = Array.from(ev.dataTransfer.files||[]); if (f.length) handleFiles(f); });
+  pz.addEventListener('dragover', ev=>ev.preventDefault());
+}
+function startScan(pref){ openScanner(pref); }
+$('nScan').addEventListener('click', ()=> openScanner(null));
+const DOCTYP = { pk:'Vorsorgeausweis Pensionskasse', '3a':'Säule 3a', '3b':'Lebensversicherung (3b)', ahv:'AHV-Dokument', lohn:'Lohnausweis', ausweis:'Ausweis / Pass', familie:'Familiendokument', steuer:'Steuerdokument', bank:'Bank- / Vermögensauszug', sonstiges:'Dokument' };
+const SCAN_ALL = `Du erhältst Fotos oder Seiten eines Schweizer Dokuments aus einer Vorsorge- oder Finanzberatung. Erkenne die Dokumentart und lies alle Angaben aus, die für eine Vorsorge-Analyse nützlich sind. Antworte NUR mit einem JSON-Objekt in genau dieser Form (unbekannte Werte null, leere Listen []):
+{"dokumenttyp": "pk"|"3a"|"3b"|"ahv"|"lohn"|"ausweis"|"familie"|"steuer"|"bank"|"sonstiges",
+ "titel": string,
+ "stand": "TT.MM.JJJJ"|null,
+ "person": {"vorname": string|null, "nachname": string|null, "geburtsjahr": number|null, "geschlecht": "m"|"f"|null},
+ "zivil": "ledig"|"verheiratet"|null,
+ "kinder": [number],
+ "lohn": number|null,
+ "ahvEinkommen": number|null,
+ "ahvLuecken": number|null,
+ "pk": {"kasse": string|null, "guthaben": number|null, "altersrente": number|null, "zins": number|null, "ivRente": number|null, "ehegattenrente": number|null, "kinderrente": number|null, "todesfallkapital": number|null},
+ "s3a": [{"anbieter": string|null, "typ": "bank"|"vers", "guthaben": number|null, "einzahlung": number|null, "rendite": number|null, "ablaufkapital": number|null, "euRente": number|null, "todesfallkapital": number|null}],
+ "privat": {"euRente": number|null, "todesfallkapital": number|null},
+ "vermoegen": number|null,
+ "unsicher": string}
+Dokumentarten: pk = Vorsorgeausweis 2. Säule; 3a = Säule-3a-Konto, -Depot oder -Police (auch Steuerbescheinigung 3a); 3b = freie Lebens- oder Risikoversicherung; ahv = IK-Auszug, Rentenvorausberechnung oder AHV-Ausweis; lohn = Lohnausweis oder Lohnabrechnung; ausweis = ID, Pass, Ausländerausweis; familie = Familienausweis, Geburts- oder Heiratsurkunde; steuer = Steuererklärung oder -veranlagung; bank = Konto- oder Depotauszug.
+Regeln:
+- Beträge in CHF als reine Zahl ohne Trennzeichen. Renten immer JÄHRLICH (Monatsrente ×12). Prozentsätze als Zahl (1.5 für 1.5 %).
+- titel: kurze Beschreibung auf Deutsch, z. B. "Vorsorgeausweis Pensionskasse XY 2026".
+- person: die Person, um die es im Dokument geht (versicherte Person, Arbeitnehmer, Kontoinhaber).
+- kinder: Geburtsjahre der Kinder, falls ersichtlich (Familienausweis, Steuererklärung, PK-Ausweis).
+- lohn: Bruttojahreslohn (Lohnausweis Ziffer 8 bzw. AHV-Jahreslohn auf dem PK-Ausweis, nicht der versicherte Lohn). Bei Monatslohn ×12, bei 13 Monatslöhnen ×13.
+- ahvEinkommen: massgebendes durchschnittliches Jahreseinkommen aus einer AHV-Rentenvorausberechnung. ahvLuecken: Anzahl fehlender Beitragsjahre aus IK-Auszug oder Vorausberechnung.
+- pk.altersrente: projizierte jährliche Altersrente im ordentlichen Rücktrittsalter (bei mehreren Varianten jene mit Projektionszins); pk.zins: dieser Projektionszins. pk.ivRente: Invalidenrente bei Krankheit. pk.kinderrente: Invaliden-Kinder- bzw. Waisenrente pro Kind. pk.todesfallkapital: zusätzliches Todesfallkapital vor der Pensionierung.
+- s3a: eine Zeile pro 3a-Lösung. guthaben = Kontostand bzw. Rückkaufswert; einzahlung = jährliche Einzahlung bzw. Jahresprämie; ablaufkapital = prognostiziertes Kapital bei Ablauf.
+- privat: Leistungen aus 3b-Versicherungen (Erwerbsunfähigkeitsrente jährlich, Todesfallkapital).
+- vermoegen: freies Vermögen (Bank, Wertschriften) ohne 3a und Pensionskasse, z. B. Total Wertschriften- und Guthabenverzeichnis.
+- Lies nur, was im Dokument steht. Erfinde nichts.
+- unsicher: kurzer deutscher Satz zu Werten, die du nicht sicher lesen konntest, sonst "".`;
+
+function sboxHtml(html){ $('sbox').innerHTML = html; if (!$('dlgScan').open) $('dlgScan').showModal(); }
+$('sbox').addEventListener('change', e=>{ if (!e.target.classList.contains('scanIn')) return; const files = Array.from(e.target.files || []); if (files.length) handleFiles(files); });
+const blobB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(b); });
+const isPdf = f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name || '');
+async function askClaude(blocks, signal){
+  let r;
+  try {
+    r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', signal,
+      headers: { 'content-type':'application/json', 'x-api-key': apiKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model:'claude-sonnet-5', max_tokens: 3000, messages: [{ role:'user', content: [...blocks, { type:'text', text: SCAN_ALL }] }] }) });
+  } catch(e){ throw { code: e && e.name === 'AbortError' ? 'cancelled' : 'network' }; }
+  if (!r.ok) { let msg = ''; try { msg = (await r.json()).error.message || ''; } catch(e){} throw { code: r.status === 401 || r.status === 403 ? 'auth' : r.status === 429 ? 'rate_limited' : /credit/i.test(msg) ? 'credits' : 'upstream_error', message: msg }; }
+  const j = await r.json();
+  const txt = (j.content || []).map(b=>b.text || '').join('');
+  const m = /\{[\s\S]*\}/.exec(txt); if (!m) throw { code:'invalid_json' };
+  try { return JSON.parse(m[0]); } catch(e){ throw { code:'invalid_json' }; }
+}
+async function handleFiles(files){
+  scanCtl = new AbortController();
+  const log = [];
+  let t0 = Date.now(), timer = null;
+  const draw = (title, done) => {
+    sboxHtml(`<div class="sbusy">${done?'':'<span class="spin dark"></span>'}<div><b>${esc(title)}</b><p id="sEl"></p></div></div>
+      <ol class="slog">${log.map(x=>`<li class="${x.s}"><span>${x.s==='ok'?'✓':x.s==='err'?'✕':'…'}</span>${esc(x.t)}</li>`).join('')}</ol>
+      <div class="row">${done?`<button class="btn" type="button" data-close>Schliessen</button><button class="btn primary" type="button" data-again>Nochmals versuchen</button>`:`<button class="btn" type="button" id="sStop">Abbrechen</button>`}</div>`);
+    if (!done) $('sStop').onclick = ()=>{ scanCtl.abort(); clearInterval(timer); $('dlgScan').close(); };
+  };
+  const step = t => { log.push({ t, s:'run' }); draw('Dokument wird gelesen'); };
+  const ok = t => { const x = log[log.length-1]; x.s = 'ok'; if (t) x.t = t; };
+  const fail = t => { const x = log[log.length-1]; if (x && x.s==='run') { x.s = 'err'; if (t) x.t += ' – ' + t; } else log.push({ t, s:'err' }); clearInterval(timer); draw('Scan nicht möglich', true); };
+  const kb = n => n > 1048576 ? (n/1048576).toFixed(1)+' MB' : Math.round(n/1024)+' KB';
+  step('Dateien empfangen'); ok(`${files.length} Datei${files.length>1?'en':''} empfangen (${files.map(f=>(f.type||'unbekannt')+', '+kb(f.size)).join('; ')})`);
+  step('Claude-Schlüssel prüfen');
+  if (!apiKey()) return fail('kein Schlüssel. Bitte im CRM unter «Mehr» den Claude-API-Schlüssel hinterlegen.');
+  ok('Claude-Schlüssel aus dem CRM gefunden');
+  step('Seiten vorbereiten');
+  const blocks = [];
+  try {
+    for (const f of files.slice(0, 8)) {
+      if (isPdf(f)) blocks.push({ type:'document', source:{ type:'base64', media_type:'application/pdf', data: await blobB64(f) } });
+      else { const j = await toJpeg(f); blocks.push({ type:'image', source:{ type:'base64', media_type: j.type && /^image\/(jpeg|png|webp|gif)$/.test(j.type) ? j.type : 'image/jpeg', data: await blobB64(j) } }); }
+    }
+    ok(`${blocks.length} Seite${blocks.length>1?'n':''} vorbereitet`);
+  } catch(err){ return fail(err && err.message ? err.message : 'Datei konnte nicht gelesen werden'); }
+  step('Claude erkennt das Dokument (meist 10 bis 60 Sekunden)');
+  t0 = Date.now(); timer = setInterval(()=>{ const el = $('sEl'); if (el) el.textContent = Math.round((Date.now()-t0)/1000) + ' Sekunden'; }, 1000);
+  try {
+    const res = await askClaude(blocks, scanCtl.signal);
+    clearInterval(timer);
+    scanRes = res && typeof res === 'object' ? res : {};
+    showScanReview(guessTarget(scanRes));
+  } catch(err){
+    const c = err && err.code; if (c === 'cancelled') { clearInterval(timer); return; }
+    const msg = c==='auth' ? 'der Claude-Schlüssel ist ungültig' : c==='credits' ? 'das Guthaben des Claude-Kontos ist aufgebraucht' : c==='rate_limited' ? 'gerade zu viele Anfragen, bitte kurz warten' : c==='network' ? 'keine Internetverbindung' : c==='invalid_json' ? 'die Antwort war nicht lesbar, bitte schärferes Foto' : 'unerwarteter Fehler' + (err && err.message ? ': ' + err.message : '');
+    fail(`${msg} (Code: ${c || 'unbekannt'})`);
+  }
+}
+$('sbox').addEventListener('click', e=>{
+  if (e.target.closest('[data-close]')) $('dlgScan').close();
+  if (e.target.closest('[data-again]')) openScanner(scanPref);
+});
+
+function guessTarget(r){
+  const d = cur(), pp = r.person || {};
+  const norm = s => String(s||'').trim().toLowerCase();
+  const n = verh(d) ? 2 : 1;
+  for (let i = 0; i < n; i++) {
+    const p = d.p[i];
+    if (pp.vorname && norm(p.vorname) && norm(p.vorname) === norm(pp.vorname)) return 'p'+i;
+  }
+  for (let i = 0; i < n; i++) if (pp.geburtsjahr && +d.p[i].gebJahr === +pp.geburtsjahr && d.p[i].vorname) return 'p'+i;
+  if (scanPref !== null && scanPref < n) return 'p'+scanPref;
+  const v = curView(d); if (v === 'p1') return 'p1';
+  const named = d.p.slice(0,n).some(p=>p.vorname);
+  return 'p0';
+}
+
+function scanRows(r, d, i){
+  const p = d.p[i], b = `p.${i}`, rows = [];
+  const n = v => (v === null || v === undefined || v === '' || !isFinite(parseFloat(v))) ? null : Math.round(parseFloat(v)*100)/100;
+  const chf = v => 'CHF '+fmt(v);
+  const row = (label, path, val, show, on) => { if (val === null || val === undefined || val === '') return; const old = getP(d, path); const same = String(old) === String(val); if (same) return;
+    rows.push({ label, old: old===''||old==null ? '' : show(old), neu: show(val), on, apply: dd => setP(dd, path.replace(/^p\.\d/, 'p.'+i), val) }); };
+  const pp = r.person || {};
+  row('Vorname', `${b}.vorname`, pp.vorname || null, String, !p.vorname);
+  row('Nachname', `${b}.nachname`, pp.nachname || null, String, !p.nachname);
+  row('Jahrgang', `${b}.gebJahr`, n(pp.geburtsjahr), String, true);
+  row('Geschlecht', `${b}.geschlecht`, pp.geschlecht==='m'||pp.geschlecht==='f' ? pp.geschlecht : null, v=>v==='m'?'männlich':'weiblich', true);
+  if (r.zivil === 'ledig' || r.zivil === 'verheiratet') { if (d.zivil !== r.zivil) rows.push({ label:'Zivilstand', old: d.zivil, neu: r.zivil, on:true, apply: dd => dd.zivil = r.zivil }); }
+  row('Bruttojahreslohn', `${b}.lohn`, n(r.lohn), chf, true);
+  row('Massg. Durchschnittseinkommen AHV', `${b}.ahvEinkommen`, n(r.ahvEinkommen), chf, true);
+  row('Fehlende AHV-Jahre', `${b}.ahvLuecken`, n(r.ahvLuecken), String, true);
+  const pk = r.pk || {};
+  row('PK Altersguthaben heute', `${b}.pk.guthaben`, n(pk.guthaben), chf, true);
+  if (i === 0 && rows.length && rows[rows.length-1].label === 'PK Altersguthaben heute') rows[rows.length-1].crm = c => {
+    const nm = String(pk.kasse || '').trim().toLowerCase();
+    let e = c.pks.find(x=>nm && String(x.name||'').trim().toLowerCase() === nm) || (c.pks.length === 1 ? c.pks[0] : null);
+    if (!e) { e = { id: kuid(), name: pk.kasse || 'Pensionskasse' }; c.pks.push(e); }
+    if (pk.kasse) e.name = pk.kasse; e.guthaben = String(n(pk.guthaben)); const st = toIso(r.stand); if (st) e.stand = st;
+    return 'Pensionskasse';
+  };
+  row('PK projizierte Altersrente p.a.', `${b}.pk.altersrente`, n(pk.altersrente), chf, true);
+  row('PK Projektionszins', `${b}.pk.zins`, n(pk.zins), v=>v+' %', true);
+  row('PK IV-Rente p.a.', `${b}.pk.ivRente`, n(pk.ivRente), chf, true);
+  row('PK Ehegattenrente p.a.', `${b}.pk.ehegattenrente`, n(pk.ehegattenrente), chf, true);
+  row('PK Kinder-/Waisenrente p.a.', `${b}.pk.kinderrente`, n(pk.kinderrente), chf, true);
+  row('PK Todesfallkapital', `${b}.pk.todesfallkapital`, n(pk.todesfallkapital), chf, true);
+  if (pk.kasse && (n(pk.guthaben)!==null || n(pk.altersrente)!==null)) rows.push({ label:'Pensionskasse', old: p.pk.kasse||'', neu: pk.kasse + (r.stand?' · Stand '+r.stand:''), on:true, apply: dd => { dd.p[i].pk.kasse = pk.kasse; dd.p[i].pk.datum = r.stand || ''; } });
+  (Array.isArray(r.s3a) ? r.s3a : []).forEach(k=>{
+    const typ = k.typ === 'vers' ? 'vers' : 'bank';
+    const vals = {}; ['guthaben','einzahlung','rendite','ablaufkapital','euRente','todesfallkapital'].forEach(f=>{ const v = n(k[f]); if (v !== null) vals[f] = v; });
+    if (!Object.keys(vals).length) return;
+    const ex = p.s3a.findIndex(x=>k.anbieter && String(x.anbieter).trim().toLowerCase() === String(k.anbieter).trim().toLowerCase());
+    const desc = [k.anbieter||'3a-Lösung', typ==='vers'?'Versicherung':'Bank', vals.guthaben!==undefined?chf(vals.guthaben):'', vals.einzahlung!==undefined?`Einzahlung ${chf(vals.einzahlung)}`:''].filter(Boolean).join(' · ');
+    const crmOp = i !== 0 ? null : (c, dd) => {
+      const nm = String(k.anbieter || '').trim().toLowerCase();
+      let e = c.vorsorge.find(x=>x.saeule === '3a' && nm && String(x.anbieter||'').trim().toLowerCase() === nm);
+      if (!e) { e = { id: kuid(), saeule:'3a', anbieter: k.anbieter || '3a-Lösung' }; c.vorsorge.push(e); }
+      e.art = typ === 'vers' ? 'Versicherungspolice' : (e.art && e.art !== 'Versicherungspolice' ? e.art : 'Vorsorgekonto');
+      if (vals.guthaben !== undefined) e.saldo = String(vals.guthaben);
+      if (vals.einzahlung !== undefined) e.einzahlung = String(vals.einzahlung);
+      const st = toIso(r.stand); if (st) e.stand = st;
+      const s = dd.p[0].s3a.find(x=>!x.crmId && String(x.anbieter||'').trim().toLowerCase() === nm); if (s) s.crmId = e.id;
+      return 'Säule 3a ' + (k.anbieter || '');
+    };
+    rows.push({ crm: crmOp, label: ex>=0 ? '3a aktualisieren' : '3a hinzufügen', old:'', neu: desc, on:true, apply: dd => { const list = dd.p[i].s3a; const j = list.findIndex(x=>k.anbieter && String(x.anbieter).trim().toLowerCase() === String(k.anbieter).trim().toLowerCase()); if (j>=0) Object.assign(list[j], { typ }, vals); else list.push(Object.assign(new3a(typ), { anbieter:k.anbieter||'' }, vals)); } });
+  });
+  const pv = r.privat || {};
+  row('Erwerbsunfähigkeitsrente privat p.a.', `${b}.euRente`, n(pv.euRente), chf, true);
+  row('Todesfallkapital privat', `${b}.todesfallkapital`, n(pv.todesfallkapital), chf, true);
+  row('Freies Vermögen (Haushalt)', 'vermoegen', n(r.vermoegen), chf, true);
+  const kidsNeu = (Array.isArray(r.kinder) ? r.kinder : []).map(n).filter(v=>v && v > 1950 && v <= K.jahr);
+  const vorhanden = (d.kids||[]).map(k=>+k.gebJahr);
+  const fehlend = kidsNeu.filter(y=>!vorhanden.includes(y));
+  if (fehlend.length) rows.push({ label:`Kind${fehlend.length>1?'er':''} hinzufügen`, old:'', neu:'Jahrgang '+fehlend.join(', '), on:true, apply: dd => { dd.kids = dd.kids || []; fehlend.forEach(y=>dd.kids.push({ gebJahr:y })); } });
+  return rows;
+}
+
+function showScanReview(target){
+  const r = scanRes, d0 = cur();
+  const isNew = false;
+  const d = isNew ? newDossier() : d0, i = isNew ? 0 : +target.slice(1);
+  if (isNew && r.zivil) d.zivil = r.zivil;
+  const rows = scanRows(r, d, i);
+  const opts = [...(verh(d0) ? [0,1] : [0]).map(k=>[`p${k}`, d0.beispiel ? `${pName(d0,k)} (Beispiel)` : (d0.p[k].vorname || (k?'Person 2':'Person 1')) + (dName(d0)?'':'')])];
+  const typ = DOCTYP[r.dokumenttyp] || 'Dokument';
+  sboxHtml(`<div class="shead"><span class="stag">${esc(typ)}</span><h3>${esc(r.titel || typ)}</h3>${r.stand?`<p class="sstand">Stand ${esc(r.stand)}</p>`:''}</div>
+    <label class="starget">Eintragen bei <select id="sTarget">${opts.map(([k,l])=>`<option value="${k}" ${k===target?'selected':''}>${esc(l)}</option>`).join('')}</select></label>
+    ${rows.length ? `<div class="srows">${rows.map((x,k)=>`<label class="srow"><input type="checkbox" data-k="${k}" ${x.on?'checked':''}><span>${esc(x.label)}${x.old?`<s>bisher ${esc(x.old)}</s>`:''}</span><b>${esc(x.neu)}</b></label>`).join('')}</div>`
+      : `<p class="snone">Keine neuen Werte für die Vorsorge-Analyse gefunden${r.dokumenttyp==='sonstiges'?'. Das Dokument wurde nicht als Vorsorgedokument erkannt.':', oder alle Werte sind bereits eingetragen.'}</p>`}
+    ${r.unsicher?`<p class="swarn">${esc(r.unsicher)}</p>`:''}
+    <div class="row"><button class="btn" type="button" data-close>${rows.length?'Verwerfen':'Schliessen'}</button>${rows.length?`<button class="btn primary" type="button" id="sApply">Übernehmen</button>`:`<button class="btn primary" type="button" data-again>Anderes Dokument</button>`}</div>`);
+  $('sTarget').onchange = e => showScanReview(e.target.value);
+  if ($('sApply')) $('sApply').onclick = ()=>{
+    const sel = Array.from($('sbox').querySelectorAll('.srow input')).filter(c=>c.checked).map(c=>rows[+c.dataset.k]);
+    if (!sel.length) { $('dlgScan').close(); return; }
+    if (isNew) { store.list.push(d); store.cur = d.id; openState = {}; }
+    sel.forEach(x=>x.apply(d)); d.updated = Date.now();
+    const ops = sel.filter(x=>x.crm);
+    let crmTxt = '';
+    if (i === 0 && KID) {
+      const done = [];
+      crmUpdate(KID, c => { ops.forEach(x=>{ const t = x.crm(c, d); if (t) done.push(t); }); c.verlauf.push({ ts: Date.now(), text: `Vorsorge-Analyse: ${r.titel || 'Dokument'} gescannt` + (done.length ? '\nIm CRM aktualisiert: ' + done.join(', ') : '') }); });
+      CRMC = crmGet(KID);
+      if (done.length) crmTxt = ' Im CRM aktualisiert: ' + done.join(', ') + '.';
+    }
+    store.view = verh(d) ? 'p'+i : 'p0';
+    save(); refresh();
+    sboxHtml(`<div class="sdone"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg><div><b>${sel.length} Wert${sel.length>1?'e':''} übernommen</b><p>${esc('Eingetragen bei ' + (d.p[i].vorname || 'Person ' + (i+1)) + '.' + crmTxt)}</p></div></div>
+      <div class="row"><button class="btn" type="button" data-close>Fertig</button><button class="btn primary" type="button" data-again>Nächstes Dokument</button></div>`);
+  };
+}
+
+async function toJpeg(file){
+  const draw = (src, w, h) => { const s = Math.min(1, 1800 / Math.max(w, h)); const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w*s)); c.height = Math.max(1, Math.round(h*s)); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); return new Promise(r=>c.toBlob(r, 'image/jpeg', 0.88)); };
+  try { const bmp = await createImageBitmap(file); const b = await draw(bmp, bmp.width, bmp.height); if (b) return b; } catch(e){}
+  try {
+    const url = URL.createObjectURL(file);
+    const img = await new Promise((ok, no)=>{ const i = new Image(); i.onload = ()=>ok(i); i.onerror = ()=>no(new Error('Bildformat wird nicht unterstützt')); i.src = url; });
+    const b = await draw(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); if (b) return b;
+  } catch(e){ if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) throw e; }
+  return file;
+}
+// ===== Kunde / Einstellungen
+function fillSelect(){
+  const d = cur(); if (!d) return;
+  $('backTxt').textContent = CRMC ? crmName(CRMC) : 'Kunden';
+  $('bBack').href = 'index.html?kunde=' + encodeURIComponent(KID) + '&tab=vorsorge';
+  document.title = 'Vorsorge-Analyse ' + dName(d);
+}
+function askDelete(){
+  const d = cur(); if (!d) return;
+  $('msgArea').innerHTML = `<div class="msg"><span>Analyse für <b>${esc(dName(d))}</b> zurücksetzen? Die Kundendaten im CRM bleiben erhalten.</span><button class="btn danger" id="mYes" type="button">Zurücksetzen</button><button class="btn" id="mNo" type="button">Abbrechen</button></div>`;
+  $('mNo').onclick = ()=> $('msgArea').innerHTML = '';
+  $('mYes').onclick = ()=>{ delete store.byKunde[KID]; ensureDossier(); save(); $('msgArea').innerHTML=''; openState = {}; refresh(); $('pdfSt').textContent = 'Analyse zurückgesetzt.'; };
+  window.scrollTo(0,0); $('mNo').focus();
+}
+$('sDel').onclick = ()=>{ $('dlgSet').close(); askDelete(); };
+$('sSync').onclick = ()=>{ $('dlgSet').close(); CRMC = crmGet(KID); if (CRMC) { syncFromCrm(cur(), CRMC); save(); refresh(); $('pdfSt').textContent = 'Daten aus dem CRM neu geladen.'; } };
+$('bMore').addEventListener('click', openSet); $('nMore').onclick = openSet;
+function openSet(){ const st = store.settings; $('sFirma').value = st.firma||''; $('sBerater').value = st.berater||''; $('sKontakt').value = st.kontakt||''; $('dlgSet').showModal(); }
+$('setForm').addEventListener('submit', e=>{
+  const v = e.submitter && e.submitter.value;
+  if (v === 'ok') { store.settings = { firma:$('sFirma').value.trim(), berater:$('sBerater').value.trim(), kontakt:$('sKontakt').value.trim() }; save(); applyBrand(); }
+});
+$('sBak').onclick = ()=>{ $('dlgSet').close(); showView('res'); backupAll(); };
+$('impFile').addEventListener('click', ()=>{ if ($('dlgSet').open) $('dlgSet').close(); });
+function applyBrand(){ document.querySelector('.brand .firm').textContent = store.settings.firma && store.settings.firma !== 'ONIA' ? store.settings.firma + ' · Vorsorge-Analyse' : 'Vorsorge-Analyse'; }
+
+function showView(v){ $('main').dataset.view = v; $('nForm').setAttribute('aria-current', v==='form'); $('nRes').setAttribute('aria-current', v==='res'); }
+$('nForm').onclick = ()=>{ showView('form'); window.scrollTo(0,0); }; $('nRes').onclick = ()=>{ showView('res'); window.scrollTo(0,0); };
+$('nPdf').onclick = ()=>{ showView('res'); $('bPdf').click(); };
+function setPeriod(p){ store.period = p; $('pM').setAttribute('aria-pressed', p==='m'); $('pY').setAttribute('aria-pressed', p==='y'); save(); render(); }
+$('pM').onclick = ()=>setPeriod('m'); $('pY').onclick = ()=>setPeriod('y');
+
+// ===== Auswertung
+const COL = { ahv:'var(--ahv)', pk:'var(--pk)', uvg:'var(--uvg)', privat:'var(--privat)', partner:'var(--partner)' };
+$('ursSeg').addEventListener('click', e=>{ const b = e.target.closest('[data-urs]'); if (!b) return; const d = cur(); d.ursache = b.dataset.urs; save(); render(); });
+function render(){
+  const d = cur(), r = calc(d), v = curView(d);
+  document.querySelectorAll('[data-urs]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.urs === (d.ursache||'krankheit')));
+  const f = store.period==='m' ? 1/12 : 1, per = store.period==='m' ? 'pro Monat' : 'pro Jahr';
+  const P = r.P;
+  const subj = v==='gemeinsam' || !verh(d) ? null : P[+v.slice(1)];
+  const name = subj ? [subj.p.vorname, subj.p.nachname].filter(Boolean).join(' ') || subj.label : dName(d);
+  const ini = (subj ? [subj.p.vorname, subj.p.nachname] : verh(d) ? [d.p[0].vorname, d.p[1].vorname] : [d.p[0].vorname, d.p[0].nachname]).filter(Boolean).map(w=>w[0]).join('').toUpperCase().slice(0,2) || '?';
+  const info = subj ? `Jahrgang ${subj.p.gebJahr} · Alter ${subj.alter} · Lohn CHF ${fmt(subj.lohn)}`
+    : verh(d) ? `${P.map(x=>`${x.label} ${x.alter}`).join(' · ')} · Haushalt CHF ${fmt(r.haushalt)} p.a.` : `Jahrgang ${d.p[0].gebJahr} · Alter ${P[0].alter} · Lohn CHF ${fmt(r.haushalt)}`;
+  $('resTitle').innerHTML = `<span class="av">${esc(ini)}</span><span class="nm">${esc(name)}${d.beispiel?'<span class="badge">Beispiel</span>':''}<small>${esc(info)}</small></span>`;
+  const list = r.views[v] || [];
+  let html = list.map(c=>caseHtml(c, f, per)).join('');
+  if (!verh(d) && !r.kinder) html += `<div class="case"><div class="case-h"><div><h2>Todesfall</h2><p>Hinterbliebene</p></div></div><p style="margin:0;color:var(--muted);font-size:13.5px">Keine Ehegatten oder Kinder erfasst. Für alleinstehende Personen ohne Kinder entsteht in der Regel keine Hinterlassenenlücke.</p></div>`;
+  $('cases').innerHTML = html;
+  const hw = v==='gemeinsam' || !verh(d) ? r.hinweise : r.hinweise.filter(h=>h.includes(subj.label));
+  $('hinweise').innerHTML = (hw.length ? hw : ['Keine besonderen Hinweise.']).map(h=>`<li>${esc(h)}</li>`).join('');
+}
+function caseHtml(c, f, per){
+  const scale = Math.max(c.bedarf, c.total) || 1;
+  const segs = c.quellen.filter(q=>q.wert>0).map(q=>`<div class="seg-b" style="flex:0 0 ${q.wert/scale*100}%;background:${COL[q.key]}" title="${esc(q.label)}"></div>`).join('');
+  const gapSeg = c.luecke>0 ? `<div class="seg-b gap-b" style="flex:0 0 ${c.luecke/scale*100}%" title="Lücke"></div>` : '';
+  const needPos = c.bedarf/scale*100;
+  const pct = Math.round(c.deckung*100);
+  const cls = pct>=100 ? 'ok' : pct>=85 ? 'mid' : 'bad';
+  const noBasis = !c.basis;
+  const gapV = noBasis ? `<span class="v pos" style="font-size:20px">Kein eigenes Erwerbseinkommen</span>` : c.luecke>0 ? `<span class="v neg">– ${fmt(c.luecke*f)}<small>CHF ${per}</small></span>` : `<span class="v pos">${fmt((c.total-c.bedarf)*f)}<small>CHF Überdeckung ${per}</small></span>`;
+  const rows = c.quellen.map(q=>`<tr><td><span class="dot" style="background:${COL[q.key]}"></span>${esc(q.label)}${q.info?`<span class="i">${esc(q.info)}</span>`:''}</td><td>${fmt(q.wert*f)}</td></tr>`).join('');
+  let cap = '';
+  if (c.id==='tod') {
+    const mx = Math.max(1, ...c.verlauf);
+    const has = c.verlauf.some(g=>g>0);
+    const bars = has ? `<div class="spark" aria-hidden="true">${c.verlauf.map((g,t)=>`<i style="height:${Math.max(3, g/mx*100)}%" title="${K.jahr+t}: CHF ${fmt(g)}"></i>`).join('')}</div><div class="spark-ax"><span>${K.jahr}</span><span>jährliche Lücke</span><span>${K.jahr+c.verlauf.length-1}</span></div>` : '';
+    const teile = c.kapitalTeile.length ? c.kapitalTeile.map(t=>`${t[0]} ${fmt(t[1])}`).join(', ') : 'kein Kapital erfasst';
+    cap = `<div class="cap"><div class="caprow"><span>Kapitalbedarf ${esc(c.horizontTxt)} (${c.horizont} J.)</span><b>CHF ${fmt(c.bedarfKap)}</b></div>${bars}
+      <div class="caprow"><span>Verfügbar <small>(${esc(teile)})</small></span><b>CHF ${fmt(c.kapital)}</b></div>
+      ${c.kapitalLuecke>0?`<div class="caprow g"><span>Fehlendes Kapital</span><b>CHF ${fmt(c.kapitalLuecke)}</b></div>`:''}</div>`;
+  }
+  if (c.massnahme && c.massnahme.length) cap += `<div class="mass"><h4>Massnahmen</h4><ul>${c.massnahme.map(m=>`<li>${esc(m)}</li>`).join('')}</ul></div>`;
+  const basisTxt = c.id==='alter' && c.person!==null && c.untertitel.includes('eigenen') ? 'des eigenen Lohns' : 'des Haushaltseinkommens';
+  return `<article class="case">
+    <div class="case-h"><div><h2>${esc(c.titel)}</h2><p>${esc(c.untertitel)} · Ziel ${c.ziel} %</p></div>${noBasis?'':`<span class="pill ${cls}">${pct} % gedeckt</span>`}</div>
+    <div class="gapnum"><span class="lbl">${noBasis?'Pensionierung':c.luecke>0?'Vorsorgelücke':'Bedarf gedeckt'}</span>${gapV}</div>
+    <div class="stack" aria-hidden="true"><div class="track">${segs}${gapSeg}</div>${noBasis?'':`<div class="need ${needPos>80?'end':''}" style="left:calc(${needPos}% - 1px)"><span>Bedarf</span></div>`}</div>
+    <table class="bd"><tbody>${rows}
+      <tr class="t"><td>Leistungen total</td><td>${fmt(c.total*f)}</td></tr>
+      <tr class="n"><td>Bedarf (${c.ziel} % ${basisTxt})</td><td>${fmt(c.bedarf*f)}</td></tr>
+      ${c.luecke>0?`<tr class="g"><td>Lücke</td><td>${fmt(c.luecke*f)}</td></tr>`:''}
+    </tbody></table>${cap}
+  </article>`;
+}
+
+// ===== Export / Import
+function offer(filename, data){
+  try {
+    const type = /\.pdf$/i.test(filename) ? 'application/pdf' : 'application/json';
+    const u = URL.createObjectURL(new Blob([data], { type }));
+    const x = document.createElement('a'); x.href = u; x.download = filename; document.body.appendChild(x); x.click(); x.remove();
+    setTimeout(()=>URL.revokeObjectURL(u), 8000);
+    $('pdfSt').textContent = filename + ' wird gespeichert.';
+  } catch(e){ $('pdfSt').textContent = 'Die Datei konnte nicht gespeichert werden.'; }
+}
+const safeName = s => String(s||'Kunde').replace(/&/g,'und').replace(/[^\wäöüÄÖÜéèà \-]/g,'').trim().replace(/\s+/g,'_') || 'Kunde';
+const dstamp = () => { const t = new Date(); return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; };
+function backupAll(){ offer(`ONIA_Vorsorge-Analysen_${dstamp()}.json`, JSON.stringify({ oniaVorsorge:1, byKunde: store.byKunde }, null, 1)); }
+$('bExp').addEventListener('click', ()=>{ const d = cur(); offer(`Vorsorge-Analyse_${safeName(dName(d))}.json`, JSON.stringify({ oniaVorsorge:1, byKunde: { [KID]: d } }, null, 2)); });
+$('impFile').addEventListener('change', e=>{
+  const file = e.target.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{ try {
+      const j = JSON.parse(rd.result);
+      const map = j.byKunde && typeof j.byKunde === 'object' ? j.byKunde : null; if (!map) throw 0;
+      let n = 0; Object.keys(map).forEach(k=>{ const d = normDossier(map[k]); if (d) { d.id = k; store.byKunde[k] = d; n++; } });
+      if (!n) throw 0;
+      ensureDossier(); save(); refresh(); $('pdfSt').textContent = `${n} Analyse${n>1?'n':''} geladen.`;
+    } catch(err){ $('pdfSt').textContent = 'Die Datei ist keine gültige Sicherung.'; } e.target.value=''; };
+  rd.readAsText(file);
+});
+
+// ===== PDF-Kundenbericht
+$('bPdf').addEventListener('click', ()=>{
+  if (!window.jspdf) { $('pdfSt').textContent = 'Die PDF-Bibliothek ist nicht geladen. Bitte Seite neu laden.'; return; }
+  const d = cur(), r = calc(d);
+  const doc = buildPdf(d, r, store.settings, store.period);
+  const t = new Date();
+  const fn = `Vorsorge-Analyse_${safeName(dName(d))}_${dstamp()}.pdf`;
+  try { doc.save(fn); $('pdfSt').textContent = fn + ' wird gespeichert.'; } catch(e){ offer(fn, doc.output('arraybuffer')); }
+  crmUpdate(KID, c => c.verlauf.push({ ts: Date.now(), text: `Vorsorge-Analyse als PDF erstellt (${dName(d)})` }));
+});
+
+function buildPdf(d, r, st, period){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W = 210, M = 18, CW = W - 2*M;
+  const f = period==='m' ? 1/12 : 1, per = period==='m' ? 'pro Monat' : 'pro Jahr';
+  const clean = s => String(s).replace(/’/g,"'").replace(/[–—]/g,'-');
+  const P = n => clean(fmt(n));
+  const C = { ink:[9,21,43], muted:[36,64,111], soft:[107,122,147], line:[230,223,207], gold:[212,196,157], ahv:[36,64,111], pk:[185,156,114], privat:[126,156,196], uvg:[94,140,122], partner:[198,191,174], gap:[180,68,58], sunk:[244,241,232] };
+  let y = 0, page = 1;
+  const color = (c, what='text') => what==='text' ? doc.setTextColor(...c) : what==='fill' ? doc.setFillColor(...c) : doc.setDrawColor(...c);
+  const txt = (t, x, yy, o={}) => { doc.setFont('helvetica', o.b?'bold':'normal'); doc.setFontSize(o.s||10); color(o.c||C.ink); doc.text(clean(t), x, yy, o.a?{align:o.a}:undefined); };
+  const footer = () => { txt(`${st.firma||'ONIA - One. Independent. Advice.'}${st.kontakt?'  ·  '+st.kontakt:''}`, M, 289, {s:7.5, c:C.soft}); txt(`Seite ${page++}`, W-M, 289, {s:7.5, c:C.soft, a:'right'}); };
+  const need = h => { if (y + h > 280) { footer(); doc.addPage(); y = 20; } };
+  const hr = () => { color(C.line,'draw'); doc.setLineWidth(.3); doc.line(M, y, W-M, y); };
+
+  // Kopf
+  color(C.gold,'fill'); doc.rect(0, 0, W, 3, 'F');
+  try { doc.addImage(LOGO, 'PNG', M, 8, 31.3, 13.2); } catch(e){}
+  if (st.firma) txt(st.firma, M+36, 18, {s:9, c:C.muted});
+  txt(new Date().toLocaleDateString('de-CH', {day:'2-digit', month:'long', year:'numeric'}), W-M, 16, {s:9, c:C.soft, a:'right'});
+  txt('Vorsorge-Analyse', M, 34, {s:22, b:true});
+  txt(`für ${dName(d)}`, M, 42, {s:12, c:C.muted});
+  if (st.berater) txt(`Beratung: ${st.berater}`, W-M, 42, {s:9, c:C.soft, a:'right'});
+  y = 50; hr(); y += 7;
+
+  // Personen
+  r.P.forEach(x=>{
+    need(30);
+    txt([x.p.vorname, x.p.nachname].filter(Boolean).join(' ') || x.label, M, y, {s:11, b:true}); y += 5;
+    txt(`Jahrgang ${x.p.gebJahr} · Bruttojahreslohn CHF ${P(x.lohn)} · AHV-Rente ca. CHF ${P(x.ahvM)} pro Monat`, M, y, {s:8.5, c:C.muted}); y += 4.5;
+    const pkT = `Pensionskasse${x.p.pk.kasse?' '+x.p.pk.kasse:''}: Guthaben CHF ${P(parseFloat(x.p.pk.guthaben)||0)}, Altersrente CHF ${P(x.pk.alters)} p.a. (${x.pk.qA})`;
+    txt(pkT, M, y, {s:8.5}); y += 4.5;
+    if (x.konten.length) x.konten.forEach(k=>{ txt(`Säule 3a ${k.typ==='vers'?'Versicherung':'Bank'}${k.anbieter?' · '+k.anbieter:''}: heute CHF ${P(parseFloat(k.guthaben)||0)}, Einzahlung CHF ${P(parseFloat(k.einzahlung)||0)} p.a., bei Pensionierung ca. CHF ${P(k.proj)}`, M, y, {s:8.5}); y += 4.5; });
+    else { txt('Säule 3a: keine erfasst', M, y, {s:8.5, c:C.soft}); y += 4.5; }
+    y += 3;
+  });
+  if (r.verh || r.kinder) { txt(`Haushalt: ${r.verh?'verheiratet':'ledig'}${r.kids.length?', Kinder Jahrgang '+(d.kids||[]).map(k=>k.gebJahr).join(', '):''}, Haushaltseinkommen CHF ${P(r.haushalt)} p.a.${r.verm?', freies Vermögen CHF '+P(r.verm):''}`, M, y, {s:8.5, c:C.muted}); y += 6; }
+  hr(); y += 7;
+
+  const faelle = r.verh ? [...r.views.gemeinsam, ...r.P.map((x,i)=>r.views['p'+i][0])] : r.views.p0;
+
+  // Übersicht
+  need(20 + faelle.length*7.5);
+  txt(`Übersicht (Beträge in CHF ${per})`, M, y, {s:12, b:true}); y += 6;
+  const cx = [M, M+92, M+118, M+144, CW+M];
+  ['Vorsorgefall','Bedarf','Leistungen','Lücke','Deckung'].forEach((h,i)=>txt(h, cx[i], y, {s:8.5, b:true, c:C.soft, a:i?'right':undefined}));
+  y += 2; hr(); y += 5;
+  faelle.forEach(c=>{
+    txt(c.titel, cx[0], y, {s:10, b:true});
+    txt(P(c.bedarf*f), cx[1], y, {s:10, a:'right'}); txt(P(c.total*f), cx[2], y, {s:10, a:'right'});
+    txt(c.luecke>0 ? P(c.luecke*f) : '-', cx[3], y, {s:10, b:true, c:c.luecke>0?C.gap:C.pk, a:'right'});
+    txt(c.basis ? Math.round(c.deckung*100)+' %' : '-', cx[4], y, {s:10, a:'right'});
+    y += 2.5; hr(); y += 5;
+  });
+  y += 4;
+
+  // Fälle im Detail
+  faelle.forEach(c=>{
+    need(34 + c.quellen.length*5.5 + 18 + (c.id==='tod'?10:0));
+    txt(c.titel, M, y, {s:13, b:true}); y += 5;
+    txt(`${c.untertitel} · Ziel ${c.ziel} %`, M, y, {s:8.5, c:C.soft}); y += 6;
+    const scale = Math.max(c.bedarf, c.total) || 1, bh = 7; let x = M;
+    color(C.sunk,'fill'); doc.rect(M, y, CW, bh, 'F');
+    c.quellen.filter(q=>q.wert>0).forEach(q=>{ const w = q.wert/scale*CW; color(C[q.key],'fill'); doc.rect(x, y, w, bh, 'F'); x += w; });
+    if (c.luecke>0) { const w = c.luecke/scale*CW; doc.setFillColor(244,214,210); doc.rect(x, y, w, bh, 'F'); color(C.gap,'draw'); doc.setLineWidth(.4); doc.rect(x, y, w, bh, 'S'); }
+    if (c.basis) { const nx = M + c.bedarf/scale*CW; color(C.ink,'draw'); doc.setLineWidth(.6); doc.line(nx, y-2, nx, y+bh+1.5); txt('Bedarf', nx, y-3, {s:7, b:true, a: nx > W-M-12 ? 'right' : 'center'}); }
+    y += bh + 6; doc.setLineWidth(.3);
+    c.quellen.forEach(q=>{
+      color(C[q.key],'fill'); doc.rect(M, y-2.6, 2.6, 2.6, 'F');
+      txt(q.label, M+5, y, {s:9.5}); doc.setFontSize(9.5); if (q.info) txt(q.info, M+5+doc.getTextWidth(clean(q.label))+3, y, {s:7.5, c:C.soft});
+      txt(P(q.wert*f), W-M, y, {s:9.5, a:'right'}); y += 5.5;
+    });
+    color(C.line,'draw'); doc.line(M, y-3, W-M, y-3);
+    txt('Leistungen total', M+5, y+1, {s:9.5, b:true}); txt(P(c.total*f), W-M, y+1, {s:9.5, b:true, a:'right'}); y += 5.5;
+    txt('Bedarf', M+5, y+1, {s:9.5, c:C.muted}); txt(P(c.bedarf*f), W-M, y+1, {s:9.5, c:C.muted, a:'right'}); y += 5.5;
+    if (c.luecke>0) { txt('Lücke', M+5, y+1, {s:9.5, b:true, c:C.gap}); txt(P(c.luecke*f), W-M, y+1, {s:9.5, b:true, c:C.gap, a:'right'}); y += 5.5; }
+    if (c.id==='tod') { doc.setFontSize(8.5); const t = doc.splitTextToSize(clean(`Kapitalbedarf ${c.horizontTxt} (${c.horizont} Jahre): CHF ${P(c.bedarfKap)}. Verfügbar CHF ${P(c.kapital)}${c.kapitalTeile.length?' ('+c.kapitalTeile.map(t=>`${t[0]} ${P(t[1])}`).join(', ')+')':''}.${c.kapitalLuecke>0?` Fehlendes Kapital CHF ${P(c.kapitalLuecke)}.`:''}`), CW-5);
+      t.forEach(l=>{ txt(l, M+5, y+1, {s:8.5, c:C.muted}); y += 4.2; }); y += 1.5; }
+    if (c.massnahme && c.massnahme.length) { doc.setFontSize(9); const ls = c.massnahme.flatMap(m=>doc.splitTextToSize(clean('• '+m), CW-9)); need(6 + ls.length*4.4);
+      txt('Massnahmen', M+5, y+2, {s:9, b:true, c:C.pk}); y += 6.5; ls.forEach(l=>{ txt(l, M+7, y, {s:9}); y += 4.4; }); y += 1; }
+    y += 6;
+  });
+
+  const block = (title, lines) => {
+    if (!lines.length) return;
+    doc.setFontSize(9.5); const wrapped = lines.flatMap(l => doc.splitTextToSize(clean(l), CW-5));
+    need(10 + Math.min(wrapped.length, 10)*4.6);
+    txt(title, M, y, {s:12, b:true}); y += 6;
+    wrapped.forEach(l=>{ need(5); txt(l, M, y, {s:9.5}); y += 4.6; }); y += 5;
+  };
+  if (d.notizen && d.notizen.trim()) block('Bemerkungen und Empfehlungen', d.notizen.trim().split(/\n+/));
+  block('Hinweise', r.hinweise.map(h=>'• '+h));
+  doc.setFontSize(7.5);
+  const disc = doc.splitTextToSize(clean('Diese Analyse ist eine vereinfachte Schätzung auf Basis der gesetzlichen Kennzahlen 2026 (AHV/IV, BVG, Säule 3a) und der erfassten Angaben. Invalidität und Tod sind ' + (d.ursache==='unfall' ? 'nach Unfall inkl. UVG' : 'nach Krankheit') + ' berechnet. Nicht berücksichtigt sind Lohnfortzahlung und Krankentaggeld während der Wartefrist, Kürzungen wegen Überentschädigung oder Plafonierung, unterschiedliche Pensionierungszeitpunkte, Steuern und Teuerung. Massgebend sind die individuelle Rentenvorausberechnung der Ausgleichskasse und der Vorsorgeausweis der Pensionskasse. Die Analyse stellt keine Garantie künftiger Leistungen dar.'), CW);
+  need(disc.length*3.5+4);
+  disc.forEach(l=>{ txt(l, M, y, {s:7.5, c:C.soft}); y += 3.5; });
+  footer();
+  return doc;
+}
+
+// ===== Start
+function refresh(){ fillSelect(); renderViewbar(); buildForm(); render(); }
+function showPicker(){
+  $('main').hidden = true; document.querySelector('.bnav').style.display = 'none'; $('picker').hidden = false;
+  $('bBack').href = 'index.html'; $('backTxt').textContent = 'CRM';
+  const list = crmList().filter(c=>c && c.id).sort((x,y)=>crmName(x).localeCompare(crmName(y),'de'));
+  const draw = () => {
+    const q = $('pickQ').value.trim().toLowerCase();
+    const f = list.filter(c=>!q || crmName(c).toLowerCase().includes(q));
+    $('pickList').innerHTML = f.length ? f.map(c=>{ const ini = ((c.vorname||'')[0]||'') + ((c.nachname||'')[0]||''); const has = !!store.byKunde[c.id];
+      return `<a class="pick-row" href="vorsorge.html?kunde=${encodeURIComponent(c.id)}"><span class="av">${esc((ini||'?').toUpperCase())}</span><span><b>${esc(crmName(c))}</b><small>${esc([c.ort, c.beruf].filter(Boolean).join(', '))}</small></span>${has?'<span class="pill ok">Analyse vorhanden</span>':''}</a>`; }).join('')
+      : `<p class="muted">${list.length ? 'Kein Kunde gefunden.' : 'Im CRM sind noch keine Kunden erfasst. Lege zuerst im CRM einen Kunden an.'}</p>`;
+  };
+  $('pickQ').oninput = draw; draw();
+}
+applyBrand();
+if (!ensureDossier()) showPicker();
+else { store.view = verh(cur()) ? (store.view || 'gemeinsam') : 'p0'; setPeriod(store.period || 'm'); refresh(); }
+</script>
+
+</body>
+</html>
