@@ -39,7 +39,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .wrap{max-width:620px;margin:0 auto}
 
-header.top{position:sticky;top:0;z-index:20;background:transparent;color:var(--ink);padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+header.top{position:relative;top:0;z-index:20;background:transparent;color:var(--ink);padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
 header.top .wrap{position:relative;z-index:1;display:flex;align-items:center;gap:10px}
 header.top .wm{height:54px;width:auto;display:block;flex:none}
 header.top span{margin-left:auto;font-size:15px;color:var(--ink);opacity:1}
@@ -230,7 +230,7 @@ button.tile:active{background:var(--tint)}
 .viewer img{width:100%;height:auto;display:block}
 .viewer .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
 .txt{width:100%;min-height:46px;padding:9px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:12px}
-.dtabs{top:var(--hh,56px)!important}
+.dtabs{top:env(safe-area-inset-top,0px)!important}
 nav.bar .wrap{grid-template-columns:repeat(5,1fr)}
 nav.bar button{font-size:13px}
 .dtabs[style*="static"]{background:transparent}
@@ -745,11 +745,11 @@ function viewDetail() {
     ${tel ? `<a class="btn ghost" href="tel:${esc(tel)}" target="_blank" rel="noopener">${I.phone} Anrufen</a>` : `<span class="btn ghost" style="opacity:.4">${I.phone} Anrufen</span>`}
     ${c.email ? `<a class="btn ghost" href="mailto:${esc(c.email)}" target="_blank" rel="noopener">${I.mail} E-Mail</a>` : `<span class="btn ghost" style="opacity:.4">${I.mail} E-Mail</span>`}
     <button class="btn" data-act="edit" data-id="${esc(c.id)}">${I.edit} Ändern</button>
-  </div>${isLead(c) ? leadBar(c) : ''}<details class="cdet" id="cdet" ${S.detOpen ? 'open' : ''}><summary><span>Kundendaten</span><span class="cdsum">${esc([c.geburtsdatum ? fmtDate(c.geburtsdatum) : '', [c.plz, c.ort].filter(Boolean).join(' '), c.telefon].filter(Boolean).join(' · ') || 'Persönlich, Kontakt, Profil')}</span></summary>${dataSections(c)}</details>${tabs}<div>${body}</div>`;
+  </div>${isLead(c) ? leadBar(c) : ''}${dataSections(c)}${tabs}<div>${body}</div>`;
 }
 function scrollToTabs() {
   const an = document.getElementById('dtabanchor'); if (!an) return;
-  const hh = (document.querySelector('header.top') || {}).offsetHeight || 56;
+  const hh = 0;
   window.scrollTo(0, Math.max(0, an.getBoundingClientRect().top + window.scrollY - hh));
 }
 
@@ -1590,7 +1590,7 @@ function render() {
   const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px');
   const dt = document.querySelector('.dtabs .on'); if (dt && dt.scrollIntoView) dt.scrollIntoView({ inline: 'center', block: 'nearest' });
   hydrateThumbs();
-  $('#hcount').textContent = S.ready ? `${S.customers.length} ${S.customers.length === 1 ? 'Kunde' : 'Kunden'}` : '';
+  $('#hcount').textContent = '';
   if (S.view === 'photo' && S.ready) { const a = $('#fcam'), b = $('#fgal'); if (a) a.onchange = onPick; if (b) b.onchange = onPick; }
 }
 
