@@ -39,8 +39,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 svg.ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .wrap{max-width:620px;margin:0 auto}
 
-header.top{position:relative;top:0;z-index:20;background:transparent;color:var(--ink);padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
-header.top .wrap{position:relative;z-index:1;display:flex;align-items:center;gap:10px}
+header.top{position:sticky;top:0;z-index:20;background:transparent;pointer-events:none;transition:opacity .08s linear;color:var(--ink);padding:calc(10px + env(safe-area-inset-top)) 16px 10px}
+header.top .wrap{pointer-events:auto;position:relative;z-index:1;display:flex;align-items:center;gap:10px}
 header.top .wm{height:54px;width:auto;display:block;flex:none}
 header.top span{margin-left:auto;font-size:15px;color:var(--ink);opacity:1}
 
@@ -1588,6 +1588,7 @@ function render() {
     : `<button class="${tab === k ? 'on' : ''}" data-act="tab" data-view="${k}">${ic}${l}</button>`).join('');
   document.body.classList.toggle('formview', S.view === 'form' || S.view === 'item' || S.view === 'letter');
   const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px');
+  requestAnimationFrame(() => { if (window.__fadeHead) window.__fadeHead(); });
   const dt = document.querySelector('.dtabs .on'); if (dt && dt.scrollIntoView) dt.scrollIntoView({ inline: 'center', block: 'nearest' });
   hydrateThumbs();
   $('#hcount').textContent = '';
@@ -1901,6 +1902,16 @@ async function init() {
   } catch (e) {}
   S.ready = true; render();
   docLoadMeta().then(m => { S.docs = m; render(); }).catch(() => {});
+  const fadeHead = () => {
+    const hd = document.querySelector('header.top'); if (!hd) return;
+    const logo = hd.querySelector('.wm') || hd;
+    const t = document.querySelector('.hero h1') || document.querySelector('main h1, .ttitle');
+    let o;
+    if (t) { const gap = t.getBoundingClientRect().top - logo.getBoundingClientRect().bottom; o = Math.max(0, Math.min(1, gap / 14)); }
+    else o = Math.max(0, 1 - window.scrollY / 60);
+    hd.style.opacity = o.toFixed(2); hd.style.visibility = o < 0.03 ? 'hidden' : '';
+  };
+  window.__fadeHead = fadeHead; window.addEventListener('scroll', fadeHead, { passive: true }); fadeHead();
   window.addEventListener('resize', () => { const hd = document.querySelector('header.top'); if (hd) document.documentElement.style.setProperty('--hh', hd.offsetHeight + 'px'); });
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); S.installEv = e; if (S.view === 'more') render(); });
